@@ -10,29 +10,29 @@ This extension is a limited port of the popular [Sublime Text](https://www.subli
 ---
 
 - [Synopsis](#synopsis)
-- [Installation](#installation)	
+- [Installation](#installation)
 - [Usage](#usage)
 	- [Deletion](#deletion)
 	- [Highlighting](#highlighting)
-- [Options](#options)	
+- [Options](#options)
 	- [Include Current Line](#include-current-line)
-	- [Include Empty Lines](#include-empty-lines)	
+	- [Include Empty Lines](#include-empty-lines)
 	- [Trim On Save](#trim-on-save)
 	- [Save After Trim](#save-after-trim)
 	- [Live Matching vs On-demand Matching](#live-matching-vs-on-demand-matching)
 	- [Ignore Syntax](#ignore-syntax)
-	- [For power-users only!](#for-power-users-only)		
+	- [For power-users only!](#for-power-users-only)
 		- [The matching pattern](#the-matching-pattern)
 
 Synopsis
 --------
 
-VS Code provides a way to automate deletion of trailing spaces *by using the auto-formatting feature*. Depending on your settings, it may be more handy to just highlight them and/or delete them by hand, at any time. This plugin provides just that, and a *lot* of options to fine-tune the way you want to decimate trailing spaces.
+VS Code provides a way to automate deletion of trailing spaces *by using the Trim Trailing Whitespace command*. Depending on your settings, it may be more handy to just highlight them and/or delete them by hand, at any time. This plugin provides just that, and a *lot* of options to fine-tune the way you want to decimate trailing spaces.
 
 Installation
 ------------
 
-It is available through [Visual Studio Marketplace](https://marketplace.visualstudio.com/VSCode) and this is the recommended way of installation (brings automatic updates with changelogs…).
+It is available through [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=shardulm94.trailing-spaces) and this is the recommended way of installation (brings automatic updates with changelogs…).
 
 
 Usage
