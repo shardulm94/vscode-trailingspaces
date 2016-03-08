@@ -31,7 +31,7 @@ export default class TrailingSpacesLoader {
     }
 
     public dispose(): void {
-        
+
     }
 
 

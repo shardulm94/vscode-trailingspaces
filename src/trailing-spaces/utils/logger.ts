@@ -20,7 +20,7 @@ export interface ILogger {
 }
 
 export class Logger implements ILogger {
-    
+
     private static instance: Logger = new Logger();
     private level: LogLevel;
     private prefix: string;
@@ -32,15 +32,15 @@ export class Logger implements ILogger {
             this.level = level || LogLevel.error;
         }
     }
-    
+
     public static getInstance(): Logger {
         return Logger.instance;
     }
-    
+
     public setPrefix(prefix: string): void {
         this.prefix = prefix;
     }
-    
+
     public setLogLevel(level: LogLevel): void {
         this.level = level;
     }
