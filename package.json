@@ -74,11 +74,11 @@
         "commands": [
             {
                 "command": "trailing-spaces.deleteTrailingSpaces",
-                "title": "Trailing Spaces: Delete Trailing Spaces"
+                "title": "Trailing Spaces: Delete"
             },
             {
                 "command": "trailing-spaces.highlightTrailingSpaces",
-                "title": "Trailing Spaces: Highlight Trailing Spaces"
+                "title": "Trailing Spaces: Highlight"
             }
         ]
     },
