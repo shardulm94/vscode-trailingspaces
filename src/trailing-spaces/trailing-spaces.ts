@@ -93,12 +93,22 @@ export default class TrailingSpaces {
         });
     }
 
+    public deleteTrailingSpacesModifiedLinesOnly(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit): void {
+        editor.edit((editBuilder: vscode.TextEditorEdit) => {
+            this.deleteTrailingRegions(editor, editBuilder, true);
+        }).then(() => {
+            this.matchTralingSpaces(editor);
+            if (this.config.get<boolean>("saveAfterTrim") && !this.config.get<boolean>("trimOnSave"))
+                editor.document.save();
+        });
+    }
+
     public highlightTrailingSpaces(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit): void {
         this.matchTralingSpaces(editor);
     }
 
-    private deleteTrailingRegions(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit): void {
-        let regions: vscode.Range[] = this.findRegionsToDelete(editor);
+    private deleteTrailingRegions(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit, overrideModifiedLinesConfig: boolean = false): void {
+        let regions: vscode.Range[] = this.findRegionsToDelete(editor, overrideModifiedLinesConfig);
 
         if (regions) {
             regions.reverse();
@@ -166,7 +176,7 @@ export default class TrailingSpaces {
         return this.modifiedLinesAsNumbers(onDisk, onBuffer);
     }
 
-    private findRegionsToDelete(editor: vscode.TextEditor): vscode.Range[] {
+    private findRegionsToDelete(editor: vscode.TextEditor, overrideModifiedLinesConfig: boolean = false): vscode.Range[] {
         let regions: TrailingRegions;
 
         if (this.config.get<boolean>("liveMatching") && this.matchedRegions[editor.document.uri.toString()])
@@ -174,19 +184,19 @@ export default class TrailingSpaces {
         else
             regions = this.findTrailingSpaces(editor);
 
-        if (this.config.get<boolean>("modifiedLinesOnly")) {
+        if (this.config.get<boolean>("modifiedLinesOnly") || overrideModifiedLinesConfig) {
             let modifiedLines: number[] = this.getModifiedLineNumbers(editor);
 
-            function onlyThoseWithTrailingSpaces(): TrailingRegions {
+            function onlyThoseWithTrailingSpaces(regions: TrailingRegions, modifiedLines: number[]): TrailingRegions {
                 return {
                     offendingLines: regions.offendingLines.filter((range: vscode.Range) => {
-                        return (modifiedLines.indexOf(range.start.line) > 0);
+                        return (modifiedLines.indexOf(range.start.line) >= 0);
                     }),
                     highlightable: []
                 }
             }
 
-            regions = onlyThoseWithTrailingSpaces();
+            regions = onlyThoseWithTrailingSpaces(regions, modifiedLines);
         }
         return regions.offendingLines;
     }
