@@ -198,17 +198,17 @@ export default class TrailingSpaces {
         let includeEmptyLines: boolean = this.config.get<boolean>("includeEmptyLines");
         let includeCurrentLine: boolean = this.config.get<boolean>("includeCurrentLine");
 
-        let regexp: string = this.config.get<string>("regexp") + "$";
-        let noEmptyLinesRegexp = "(?<=\S)" + regexp + "$";
+        let regexp: string = "(" + this.config.get<string>("regexp") + ")$";
+        let noEmptyLinesRegexp = "\\S" + regexp;
 
         let offendingLines: vscode.Range[] = [];
         let offendingLinesRegexp: RegExp = new RegExp(includeEmptyLines ? regexp : noEmptyLinesRegexp);
 
         for (let i: number = 0; i < editor.document.lineCount; i++) {
-            let line: vscode.TextLine = editor.document.lineAt(i);
-            let match: RegExpExecArray = offendingLinesRegexp.exec(line.text);
+            let currLine: vscode.TextLine = editor.document.lineAt(i);
+            let match: RegExpExecArray = offendingLinesRegexp.exec(currLine.text);
             if (match) {
-                offendingLines.push(new vscode.Range(new vscode.Position(i, match.index), line.range.end));
+                offendingLines.push(new vscode.Range(new vscode.Position(i, currLine.text.lastIndexOf(match[1])), currLine.range.end));
             }
         }
 
@@ -216,12 +216,12 @@ export default class TrailingSpaces {
             return { offendingLines: offendingLines, highlightable: offendingLines };
         } else {
             let currentOffender: RegExpExecArray = offendingLinesRegexp.exec(line.text);
-            let currentOffenderRange: vscode.Range = new vscode.Range(new vscode.Position(line.lineNumber, currentOffender.index), line.range.end);
-            let removal: vscode.Range = (!currentOffender) ? null : line.range.intersection(currentOffenderRange);
+            let currentOffenderRange: vscode.Range = (!currentOffender) ? null : (new vscode.Range(new vscode.Position(line.lineNumber, line.text.lastIndexOf(currentOffender[1])), line.range.end));
+            let removal: vscode.Range = (!currentOffenderRange) ? null : line.range.intersection(currentOffenderRange);
             let highlightable: vscode.Range[] = [];
             if (removal) {
                 for (let i: number = 0; i < offendingLines.length; i++) {
-                    if (offendingLines[i].isEqual(currentOffenderRange)) {
+                    if (!offendingLines[i].isEqual(currentOffenderRange)) {
                         highlightable.push(offendingLines[i]);
                     }
                 }
