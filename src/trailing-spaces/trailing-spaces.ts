@@ -3,6 +3,8 @@
 import * as vscode from 'vscode';
 import { LogLevel, ILogger, Logger } from './utils/logger';
 import { Config } from './config';
+import jsdiff = require('diff');
+import fs = require('fs');
 
 interface TrailingRegions {
     offendingLines: vscode.Range[],
@@ -141,6 +143,29 @@ export default class TrailingSpaces {
         editor.setDecorations(this.decorationType, highlightable);
     }
 
+    private modifiedLinesAsNumbers(oldFile: string, newFile: string): number[] {
+        let diffs: jsdiff.IDiffResult[] = jsdiff.diffLines(oldFile, newFile);
+
+        let lineNumber: number = 0;
+        let editedLines: number[] = [];
+        diffs.forEach((diff: jsdiff.IDiffResult) => {
+            if (diff.added)
+                editedLines.push(lineNumber);
+            if (!diff.removed)
+                lineNumber += diff.count;
+        });
+        return editedLines;
+    }
+
+    private getModifiedLineNumbers(editor: vscode.TextEditor): number[] {
+        let onDisk: string = null;
+        if (editor.document.fileName)
+            onDisk = fs.readFileSync(editor.document.fileName, "utf-8");
+        let onBuffer: string = editor.document.getText();
+
+        return this.modifiedLinesAsNumbers(onDisk, onBuffer);
+    }
+
     private findRegionsToDelete(editor: vscode.TextEditor): vscode.Range[] {
         let regions: TrailingRegions;
 
@@ -150,9 +175,19 @@ export default class TrailingSpaces {
             regions = this.findTrailingSpaces(editor);
 
         if (this.config.get<boolean>("modifiedLinesOnly")) {
+            let modifiedLines: number[] = this.getModifiedLineNumbers(editor);
 
+            function onlyThoseWithTrailingSpaces(): TrailingRegions {
+                return {
+                    offendingLines: regions.offendingLines.filter((range: vscode.Range) => {
+                        return (modifiedLines.indexOf(range.start.line) > 0);
+                    }),
+                    highlightable: []
+                }
+            }
+
+            regions = onlyThoseWithTrailingSpaces();
         }
-
         return regions.offendingLines;
     }
 
