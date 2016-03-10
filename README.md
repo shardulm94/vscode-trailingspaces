@@ -17,6 +17,7 @@ This extension is a limited port of the popular [Sublime Text](https://www.subli
 - [Options](#options)
 	- [Include Current Line](#include-current-line)
 	- [Include Empty Lines](#include-empty-lines)
+    - [Modified Lines Only](#modified-lines-only)
 	- [Trim On Save](#trim-on-save)
 	- [Save After Trim](#save-after-trim)
 	- [Live Matching vs On-demand Matching](#live-matching-vs-on-demand-matching)
@@ -97,6 +98,18 @@ When firing the deletion command, empty lines are matched as trailing regions, a
 ```
 
 They will not be highlighted either.
+
+### Modified Lines Only
+
+*Default: false*
+
+When firing the deletion command, trailing regions *in the entire document* are deleted. There are some use-cases when deleting trailing spaces *only on lines you edited* is smarter; for instance when commiting changes to some third-party source code.
+
+At any time, you can change which area is covered when deleting trailing regions by changing the setting:
+
+``` js
+{ "trailing-spaces.modifiedLinesOnly": true }
+```
 
 ### Trim On Save
 
