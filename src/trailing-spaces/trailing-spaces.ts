@@ -36,7 +36,7 @@ export default class TrailingSpaces {
         vscode.window.onDidChangeActiveTextEditor((editor: vscode.TextEditor) => {
             this.logger.log("onDidChangeActiveTextEditor event called - " + editor.document.fileName);
             if (this.config.get<boolean>("liveMatching"))
-                return this.matchTralingSpaces(editor);
+                return this.matchTrailingSpaces(editor);
             return;
         });
 
@@ -44,20 +44,20 @@ export default class TrailingSpaces {
             let editor = e.textEditor;
             this.logger.log("onDidChangeTextEditorSelection event called - " + editor.document.fileName);
             if (this.config.get<boolean>("liveMatching"))
-                this.matchTralingSpaces(editor);
+                this.matchTrailingSpaces(editor);
             return;
         });
         vscode.workspace.onDidChangeTextDocument((e: vscode.TextDocumentChangeEvent) => {
             this.logger.log("onDidChangeTextDocument event called - " + e.document.fileName);
             if (vscode.window.activeTextEditor && vscode.window.activeTextEditor.document == e.document)
                 if (this.config.get<boolean>("liveMatching"))
-                    this.matchTralingSpaces(vscode.window.activeTextEditor);
+                    this.matchTrailingSpaces(vscode.window.activeTextEditor);
         });
         vscode.workspace.onDidOpenTextDocument((document: vscode.TextDocument) => {
             this.logger.log("onDidOpenTextDocument event called - " + document.fileName);
             if (vscode.window.activeTextEditor && vscode.window.activeTextEditor.document == document)
                 if (this.config.get<boolean>("liveMatching"))
-                    this.matchTralingSpaces(vscode.window.activeTextEditor);
+                    this.matchTrailingSpaces(vscode.window.activeTextEditor);
         });
         vscode.workspace.onDidSaveTextDocument((document: vscode.TextDocument) => {
             this.logger.log("onDidSaveTextDocument event called - " + document.fileName);
@@ -77,7 +77,7 @@ export default class TrailingSpaces {
     public initialize() {
         if (this.config.get<boolean>("liveMatching")) {
             vscode.window.visibleTextEditors.forEach((editor: vscode.TextEditor) => {
-                this.matchTralingSpaces(editor);
+                this.matchTrailingSpaces(editor);
             });
             this.logger.log("All visible text editors highlighted");
         }
@@ -87,7 +87,7 @@ export default class TrailingSpaces {
         editor.edit((editBuilder: vscode.TextEditorEdit) => {
             this.deleteTrailingRegions(editor, editBuilder);
         }).then(() => {
-            this.matchTralingSpaces(editor);
+            this.matchTrailingSpaces(editor);
             if (this.config.get<boolean>("saveAfterTrim") && !this.config.get<boolean>("trimOnSave"))
                 editor.document.save();
         });
@@ -97,14 +97,14 @@ export default class TrailingSpaces {
         editor.edit((editBuilder: vscode.TextEditorEdit) => {
             this.deleteTrailingRegions(editor, editBuilder, true);
         }).then(() => {
-            this.matchTralingSpaces(editor);
+            this.matchTrailingSpaces(editor);
             if (this.config.get<boolean>("saveAfterTrim") && !this.config.get<boolean>("trimOnSave"))
                 editor.document.save();
         });
     }
 
     public highlightTrailingSpaces(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit): void {
-        this.matchTralingSpaces(editor);
+        this.matchTrailingSpaces(editor);
     }
 
     private deleteTrailingRegions(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit, overrideModifiedLinesConfig: boolean = false): void {
@@ -128,7 +128,7 @@ export default class TrailingSpaces {
         vscode.window.setStatusBarMessage(message, 3000);
     }
 
-    private matchTralingSpaces(editor: vscode.TextEditor): void {
+    private matchTrailingSpaces(editor: vscode.TextEditor): void {
         if (this.ignoreView(editor))
             return;
 
