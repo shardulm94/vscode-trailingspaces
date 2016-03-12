@@ -24,12 +24,14 @@ export default class TrailingSpaces {
     };
     private decorationType: vscode.TextEditorDecorationType;
     private matchedRegions: { [id: string]: TrailingRegions; };
+    private languagesToIgnore: { [id: string]: boolean; };
 
     constructor() {
         this.logger = Logger.getInstance();
         this.config = Config.getInstance();
         this.decorationType = vscode.window.createTextEditorDecorationType(this.decorationOptions);
         this.matchedRegions = {};
+        this.languagesToIgnore = {};
     }
 
     public addListeners() {
@@ -81,6 +83,9 @@ export default class TrailingSpaces {
             });
             this.logger.log("All visible text editors highlighted");
         }
+        this.config.get<string[]>("syntaxIgnore").map((language: string) => {
+            this.languagesToIgnore[language] = true;
+        })
     }
 
     public deleteTrailingSpaces(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit): void {
@@ -129,19 +134,19 @@ export default class TrailingSpaces {
     }
 
     private matchTrailingSpaces(editor: vscode.TextEditor): void {
-        if (this.ignoreView(editor))
+        if (this.ignoreFile(editor)) {
+            this.logger.log("File with langauge '" + editor.document.languageId + "' ignored.");
             return;
+        }
 
         let regions: TrailingRegions = this.findTrailingSpaces(editor);
         this.addTrailingSpacesRegions(editor, regions);
         this.highlightTrailingSpacesRegions(editor, regions.highlightable);
     }
 
-    private ignoreView(editor: vscode.TextEditor): boolean {
+    private ignoreFile(editor: vscode.TextEditor): boolean {
         let viewSyntax: string = editor.document.languageId;
-        return this.config.get<string[]>("syntaxIgnore").some((syntax: string) => {
-            return viewSyntax.includes(syntax);
-        });
+        return (this.languagesToIgnore[viewSyntax] == true);
     }
 
     private addTrailingSpacesRegions(editor: vscode.TextEditor, regions: TrailingRegions): void {

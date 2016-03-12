@@ -151,12 +151,20 @@ In this case, for no trailing regions are matched until you request them to be d
 
 *Default: []*
 
-With this option you can ignore specific files/views based on the syntax used. An item has to match a case-sensitive substring of the syntax used in the view:
+With this option you can ignore specific files based on the language used. An item has to match the case-sensitive string of the language used in the file:
 
 ``` js
-// Views with a syntax that contains "Diff" are ignored
-{ "trailing-spaces.syntaxIgnore": ["Diff"]}
+// files with the language "markdown" are ignored
+{ "trailing-spaces.syntaxIgnore": ["markdown"]}
 ```
+
+Here is a list of all languages that VS Code supports (as of 12 March 2016):
+
+```js
+bat, c, clojure, coffeescript, cpp, css, dockerfile, fsharp, go, groovy, handlebars, html, ini, jade, java, javascript, javascriptreact, json, less, Log, lua, makefile, markdown, objective-c, perl, perl6, php, plaintext, powershell, python, r, razor, ruby, rust, sass, shaderlab, shellscript, sql, swift, typescript, typescriptreact, vb, xml, xsl, ya
+```
+
+For the most recent list of langauges, please use the `languages.getLanguages()` function (details [here](https://code.visualstudio.com/docs/extensionAPI/vscode-api#languages.getLanguages)).
 
 ### For power-users only!
 
