@@ -18,6 +18,7 @@ export default class TrailingSpacesLoader {
         this.config = Config.getInstance();
         this.config.load();
         this.trailingSpaces = new TrailingSpaces();
+        this.config.onLoad(this.trailingSpaces.loadConfig, this.trailingSpaces);
     }
 
     public activate(subscriptions: vscode.Disposable[]): void {

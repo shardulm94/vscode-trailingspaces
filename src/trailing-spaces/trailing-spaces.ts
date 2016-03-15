@@ -11,6 +11,17 @@ interface TrailingRegions {
     highlightable: vscode.Range[]
 }
 
+interface TralingSpacesSettings {
+    includeEmptyLines: boolean,
+    includeCurrentLine: boolean,
+    regexp: string,
+    liveMatching: boolean,
+    modifiedLinesOnly: boolean,
+    syntaxIgnore: string[],
+    trimOnSave: boolean,
+    saveAfterTrim: boolean
+}
+
 export default class TrailingSpaces {
 
     private logger: ILogger;
@@ -25,19 +36,35 @@ export default class TrailingSpaces {
     private decorationType: vscode.TextEditorDecorationType;
     private matchedRegions: { [id: string]: TrailingRegions; };
     private languagesToIgnore: { [id: string]: boolean; };
+    private settings: TralingSpacesSettings;
+    private highlightSettings: TralingSpacesSettings;
 
     constructor() {
         this.logger = Logger.getInstance();
         this.config = Config.getInstance();
+        this.loadConfig();
         this.decorationType = vscode.window.createTextEditorDecorationType(this.decorationOptions);
         this.matchedRegions = {};
         this.languagesToIgnore = {};
     }
+    
+    public loadConfig(): void {
+        this.settings = {
+            includeEmptyLines: this.config.get<boolean>("includeEmptyLines"),
+            includeCurrentLine: this.config.get<boolean>("includeCurrentLine"),
+            regexp: this.config.get<string>("regexp"),
+            liveMatching: this.config.get<boolean>("liveMatching"),
+            modifiedLinesOnly: this.config.get<boolean>("modifiedLinesOnly"),
+            syntaxIgnore: this.config.get<string[]>("syntaxIgnore"),
+            trimOnSave: this.config.get<boolean>("trimOnSave"),
+            saveAfterTrim: this.config.get<boolean>("saveAfterTrim")
+        }
+    }
 
-    public addListeners() {
+    public addListeners(): void {
         vscode.window.onDidChangeActiveTextEditor((editor: vscode.TextEditor) => {
             this.logger.log("onDidChangeActiveTextEditor event called - " + editor.document.fileName);
-            if (this.config.get<boolean>("liveMatching"))
+            if (this.settings.liveMatching)
                 return this.matchTrailingSpaces(editor);
             return;
         });
@@ -45,27 +72,27 @@ export default class TrailingSpaces {
         vscode.window.onDidChangeTextEditorSelection((e: vscode.TextEditorSelectionChangeEvent) => {
             let editor = e.textEditor;
             this.logger.log("onDidChangeTextEditorSelection event called - " + editor.document.fileName);
-            if (this.config.get<boolean>("liveMatching"))
+            if (this.settings.liveMatching)
                 this.matchTrailingSpaces(editor);
             return;
         });
         vscode.workspace.onDidChangeTextDocument((e: vscode.TextDocumentChangeEvent) => {
             this.logger.log("onDidChangeTextDocument event called - " + e.document.fileName);
             if (vscode.window.activeTextEditor && vscode.window.activeTextEditor.document == e.document)
-                if (this.config.get<boolean>("liveMatching"))
+                if (this.settings.liveMatching)
                     this.matchTrailingSpaces(vscode.window.activeTextEditor);
         });
         vscode.workspace.onDidOpenTextDocument((document: vscode.TextDocument) => {
             this.logger.log("onDidOpenTextDocument event called - " + document.fileName);
             if (vscode.window.activeTextEditor && vscode.window.activeTextEditor.document == document)
-                if (this.config.get<boolean>("liveMatching"))
+                if (this.settings.liveMatching)
                     this.matchTrailingSpaces(vscode.window.activeTextEditor);
         });
         vscode.workspace.onDidSaveTextDocument((document: vscode.TextDocument) => {
             this.logger.log("onDidSaveTextDocument event called - " + document.fileName);
             vscode.window.visibleTextEditors.forEach((editor: vscode.TextEditor) => {
                 if (document.uri === editor.document.uri)
-                    if (this.config.get<boolean>("trimOnSave")) {
+                    if (this.settings.trimOnSave) {
                         editor.edit((editBuilder: vscode.TextEditorEdit) => {
                             this.deleteTrailingSpaces(editor, editBuilder);
                         }).then(() => {
@@ -76,34 +103,34 @@ export default class TrailingSpaces {
         });
     }
 
-    public initialize() {
-        if (this.config.get<boolean>("liveMatching")) {
+    public initialize(): void {
+        if (this.settings.liveMatching) {
             vscode.window.visibleTextEditors.forEach((editor: vscode.TextEditor) => {
                 this.matchTrailingSpaces(editor);
             });
             this.logger.log("All visible text editors highlighted");
         }
-        this.config.get<string[]>("syntaxIgnore").map((language: string) => {
+        this.settings.syntaxIgnore.map((language: string) => {
             this.languagesToIgnore[language] = true;
         })
     }
-
+    
     public deleteTrailingSpaces(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit): void {
         editor.edit((editBuilder: vscode.TextEditorEdit) => {
-            this.deleteTrailingRegions(editor, editBuilder);
+            this.deleteTrailingRegions(editor, editBuilder, this.settings);
         }).then(() => {
-            this.matchTrailingSpaces(editor);
-            if (this.config.get<boolean>("saveAfterTrim") && !this.config.get<boolean>("trimOnSave"))
+            if (this.settings.saveAfterTrim && !this.settings.trimOnSave)
                 editor.document.save();
         });
     }
 
     public deleteTrailingSpacesModifiedLinesOnly(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit): void {
+        let modifiedLinesSettings: TralingSpacesSettings = this.settings;
+        modifiedLinesSettings.modifiedLinesOnly = true;
         editor.edit((editBuilder: vscode.TextEditorEdit) => {
-            this.deleteTrailingRegions(editor, editBuilder, true);
+            this.deleteTrailingRegions(editor, editBuilder, modifiedLinesSettings);
         }).then(() => {
-            this.matchTrailingSpaces(editor);
-            if (this.config.get<boolean>("saveAfterTrim") && !this.config.get<boolean>("trimOnSave"))
+            if (this.settings.saveAfterTrim && !this.settings.trimOnSave)
                 editor.document.save();
         });
     }
@@ -112,8 +139,8 @@ export default class TrailingSpaces {
         this.matchTrailingSpaces(editor);
     }
 
-    private deleteTrailingRegions(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit, overrideModifiedLinesConfig: boolean = false): void {
-        let regions: vscode.Range[] = this.findRegionsToDelete(editor, overrideModifiedLinesConfig);
+    private deleteTrailingRegions(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit, settings: TralingSpacesSettings): void {
+        let regions: vscode.Range[] = this.findRegionsToDelete(editor.document, settings, editor.document.lineAt(editor.selection.end));
 
         if (regions) {
             regions.reverse();
@@ -139,8 +166,8 @@ export default class TrailingSpaces {
             return;
         }
 
-        let regions: TrailingRegions = this.findTrailingSpaces(editor);
-        this.addTrailingSpacesRegions(editor, regions);
+        let regions: TrailingRegions = this.findTrailingSpaces(editor.document, this.settings, editor.document.lineAt(editor.selection.end));
+        this.addTrailingSpacesRegions(editor.document, regions);
         this.highlightTrailingSpacesRegions(editor, regions.highlightable);
     }
 
@@ -149,8 +176,8 @@ export default class TrailingSpaces {
         return (this.languagesToIgnore[viewSyntax] == true);
     }
 
-    private addTrailingSpacesRegions(editor: vscode.TextEditor, regions: TrailingRegions): void {
-        this.matchedRegions[editor.document.uri.toString()] = regions;
+    private addTrailingSpacesRegions(document: vscode.TextDocument, regions: TrailingRegions): void {
+        this.matchedRegions[document.uri.toString()] = regions;
     }
 
     private highlightTrailingSpacesRegions(editor: vscode.TextEditor, highlightable: vscode.Range[]): void {
@@ -172,25 +199,25 @@ export default class TrailingSpaces {
         return editedLines;
     }
 
-    private getModifiedLineNumbers(editor: vscode.TextEditor): number[] {
+    private getModifiedLineNumbers(document: vscode.TextDocument): number[] {
         let onDisk: string = null;
-        if (editor.document.fileName)
-            onDisk = fs.readFileSync(editor.document.fileName, "utf-8");
-        let onBuffer: string = editor.document.getText();
+        if (document.fileName)
+            onDisk = fs.readFileSync(document.fileName, "utf-8");
+        let onBuffer: string = document.getText();
 
         return this.modifiedLinesAsNumbers(onDisk, onBuffer);
     }
 
-    private findRegionsToDelete(editor: vscode.TextEditor, overrideModifiedLinesConfig: boolean = false): vscode.Range[] {
+    private findRegionsToDelete(document: vscode.TextDocument, settings: TralingSpacesSettings, currentLine: vscode.TextLine = null): vscode.Range[] {
         let regions: TrailingRegions;
 
-        if (this.config.get<boolean>("liveMatching") && this.matchedRegions[editor.document.uri.toString()])
-            regions = this.matchedRegions[editor.document.uri.toString()];
+        if (settings.liveMatching && this.matchedRegions[document.uri.toString()])
+            regions = this.matchedRegions[document.uri.toString()];
         else
-            regions = this.findTrailingSpaces(editor);
+            regions = this.findTrailingSpaces(document, settings, currentLine);
 
-        if (this.config.get<boolean>("modifiedLinesOnly") || overrideModifiedLinesConfig) {
-            let modifiedLines: number[] = this.getModifiedLineNumbers(editor);
+        if (settings.modifiedLinesOnly) {
+            let modifiedLines: number[] = this.getModifiedLineNumbers(document);
 
             function onlyThoseWithTrailingSpaces(regions: TrailingRegions, modifiedLines: number[]): TrailingRegions {
                 return {
@@ -206,33 +233,26 @@ export default class TrailingSpaces {
         return regions.offendingLines;
     }
 
-    private findTrailingSpaces(editor: vscode.TextEditor): TrailingRegions {
-        let sel: vscode.Selection = editor.selection;
-        let line: vscode.TextLine = editor.document.lineAt(sel.end.line);
+    private findTrailingSpaces(document: vscode.TextDocument, settings: TralingSpacesSettings, currentLine: vscode.TextLine = null): TrailingRegions {
 
-        let includeEmptyLines: boolean = this.config.get<boolean>("includeEmptyLines");
-        let includeCurrentLine: boolean = this.config.get<boolean>("includeCurrentLine");
-
-        let regexp: string = "(" + this.config.get<string>("regexp") + ")$";
+        let regexp: string = "(" + settings.regexp + ")$";
         let noEmptyLinesRegexp = "\\S" + regexp;
 
         let offendingLines: vscode.Range[] = [];
-        let offendingLinesRegexp: RegExp = new RegExp(includeEmptyLines ? regexp : noEmptyLinesRegexp);
+        let offendingLinesRegexp: RegExp = new RegExp(settings.includeEmptyLines ? regexp : noEmptyLinesRegexp);
 
-        for (let i: number = 0; i < editor.document.lineCount; i++) {
-            let currLine: vscode.TextLine = editor.document.lineAt(i);
-            let match: RegExpExecArray = offendingLinesRegexp.exec(currLine.text);
+        for (let i: number = 0; i < document.lineCount; i++) {
+            let line: vscode.TextLine = document.lineAt(i);
+            let match: RegExpExecArray = offendingLinesRegexp.exec(line.text);
             if (match) {
-                offendingLines.push(new vscode.Range(new vscode.Position(i, currLine.text.lastIndexOf(match[1])), currLine.range.end));
+                offendingLines.push(new vscode.Range(new vscode.Position(i, line.text.lastIndexOf(match[1])), line.range.end));
             }
         }
 
-        if (includeCurrentLine) {
-            return { offendingLines: offendingLines, highlightable: offendingLines };
-        } else {
-            let currentOffender: RegExpExecArray = offendingLinesRegexp.exec(line.text);
-            let currentOffenderRange: vscode.Range = (!currentOffender) ? null : (new vscode.Range(new vscode.Position(line.lineNumber, line.text.lastIndexOf(currentOffender[1])), line.range.end));
-            let removal: vscode.Range = (!currentOffenderRange) ? null : line.range.intersection(currentOffenderRange);
+        if (!settings.includeCurrentLine && currentLine) {
+            let currentOffender: RegExpExecArray = offendingLinesRegexp.exec(currentLine.text);
+            let currentOffenderRange: vscode.Range = (!currentOffender) ? null : (new vscode.Range(new vscode.Position(currentLine.lineNumber, currentLine.text.lastIndexOf(currentOffender[1])), currentLine.range.end));
+            let removal: vscode.Range = (!currentOffenderRange) ? null : currentLine.range.intersection(currentOffenderRange);
             let highlightable: vscode.Range[] = [];
             if (removal) {
                 for (let i: number = 0; i < offendingLines.length; i++) {
@@ -244,6 +264,8 @@ export default class TrailingSpaces {
                 highlightable = offendingLines;
             }
             return { offendingLines: offendingLines, highlightable: highlightable };
+        } else {
+            return { offendingLines: offendingLines, highlightable: offendingLines };
         }
     }
 
