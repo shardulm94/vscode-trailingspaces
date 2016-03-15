@@ -5,15 +5,16 @@ A [VS Code](https://code.visualstudio.com/) extension that allows you to…
 
 **highlight trailing spaces and delete them in a flash!**
 
-This extension is a limited port of the popular [Sublime Text](https://www.sublimetext.com/) plugin [Trailing Spaces](https://github.com/SublimeText/TrailingSpaces).
+This extension is a port of the popular [Sublime Text](https://www.sublimetext.com/) plugin [Trailing Spaces](https://github.com/SublimeText/TrailingSpaces).
 
 ---
 
 - [Synopsis](#synopsis)
 - [Installation](#installation)
 - [Usage](#usage)
-	- [Deletion](#deletion)
-	- [Highlighting](#highlighting)
+	- [Delete](#delete)
+    - [Delete - Modified Lines Only](#delete---modified-lines-only)
+	- [Highlight](#highlight)
 - [Options](#options)
 	- [Include Current Line](#include-current-line)
 	- [Include Empty Lines](#include-empty-lines)
@@ -39,11 +40,11 @@ It is available through [Visual Studio Marketplace](https://marketplace.visualst
 Usage
 -----
 
-### Deletion
+### Delete
 
 The main feature you gain from using this plugin is that of deleting all trailing spaces in the currently edited document. In order to use this deletion feature, you may either:
 
-* press F1 and select/type "Trailing Spaces: Delete Trailing Spaces"
+* press F1 and select/type "Trailing Spaces: Delete"
 * bind the deletion command to a keyboard shortcut:
 
 To add a key binding, open "File / Preferences / Keyboard Shortcuts" and add:
@@ -55,11 +56,24 @@ To add a key binding, open "File / Preferences / Keyboard Shortcuts" and add:
 
 With this setting, pressing <kbd>Alt + Shift + t</kbd> will delete all trailing spaces at once in the current file!
 
-### Highlighting
+### Delete - Modified Lines Only
+
+You can also delete the trailing spaces exclusively from the modified (unsaved) lines. In order to use this deletion feature, you may either:
+
+* press F1 and select/type "Trailing Spaces: Delete - Modified Lines Only"
+* bind the deletion command to a keyboard shortcut:
+
+To add a key binding, open "File / Preferences / Keyboard Shortcuts" and add:
+
+``` js
+{ "key": "alt+shift+m",        "command": "trailing-spaces.deleteTrailingSpacesModifiedLinesOnly",
+                                  "when": "editorTextFocus" },
+```
+### Highlight
 
 At any time, you can highlight the trailing spaces. You may either:
 
-- press F1 and select/type "Trailing Spaces: Highlight Trailing Spaces"
+- press F1 and select/type "Trailing Spaces: Highlight"
 - bind the highlighting command to a keyboard shortcut:
 
 ``` js
