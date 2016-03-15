@@ -2,7 +2,7 @@
     "name": "trailing-spaces",
     "displayName": "Trailing Spaces",
     "description": "Highlight trailing spaces and delete them in a flash!",
-    "version": "0.2.3",
+    "version": "0.2.4",
     "publisher": "shardulm94",
     "icon": "icon.png",
     "engines": {
@@ -52,7 +52,7 @@
                 "trailing-spaces.modifiedLinesOnly": {
                     "type": "boolean",
                     "default": false,
-                    "description": "By default, trailing spaces are deleted within the whole document.\nSet to true to affect only the lines you edited since last save. Trailing spaces will still be searched for and highlighted in the whole document."
+                    "description": "By default, trailing spaces are deleted within the whole document. Set to true to affect only the lines you edited since last save. Trailing spaces will still be searched for and highlighted in the whole document."
                 },
                 "trailing-spaces.syntaxIgnore": {
                     "type": "array",
