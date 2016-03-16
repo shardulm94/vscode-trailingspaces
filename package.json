@@ -92,7 +92,8 @@
     "scripts": {
         "vscode:prepublish": "node ./node_modules/vscode/bin/compile",
         "compile": "node ./node_modules/vscode/bin/compile -watch -p ./",
-        "precompile": "ncp test/files out/test/files"
+        "test": "node ./node_modules/vscode/bin/test",
+        "pretest": "ncp test/files out/test/files"
     },
     "devDependencies": {
         "ncp": "^2.0.0",
