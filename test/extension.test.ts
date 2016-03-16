@@ -15,10 +15,10 @@ import * as path from 'path';
 let trailingSpaces: TrailingSpaces = new TrailingSpaces();
 let defaultSettings: TralingSpacesSettings = {
     includeEmptyLines: true,
-    includeCurrentLine: true,
+    highlightCurrentLine: true,
     regexp: "[ \t]+",
     liveMatching: true,
-    modifiedLinesOnly: false,
+    deleteModifiedLinesOnly: false,
     syntaxIgnore: [],
     trimOnSave: false,
     saveAfterTrim: false
@@ -52,14 +52,14 @@ describe("Extension Tests", () => {
 
         it("should delete but not highlight trailing spaces in the current line", (done: MochaDone) => {
             let settings: TralingSpacesSettings = Object.assign({}, defaultSettings);
-            settings.includeCurrentLine = false;
+            settings.highlightCurrentLine = false;
             testFileEditor.selections = [new vscode.Selection(new vscode.Position(1, 3), new vscode.Position(1, 3))];
             assertDeleteTrailingSpaces(testFileEditor, settings, './files/delete_trailing_spaces_exclude_current_line_highlight.js', done);
         });
 
         it("should not delete trailing spaces in the current line if line is empty", (done: MochaDone) => {
             let settings: TralingSpacesSettings = Object.assign({}, defaultSettings);
-            settings.includeCurrentLine = false;
+            settings.highlightCurrentLine = false;
             settings.includeEmptyLines = false;
             testFileEditor.selections = [new vscode.Selection(new vscode.Position(11, 3), new vscode.Position(11, 3))];
             assertDeleteTrailingSpaces(testFileEditor, settings, './files/delete_trailing_spaces_exclude_empty_line_when_exclude_current_line_highlight.js', done);
