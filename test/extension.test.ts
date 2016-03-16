@@ -64,6 +64,12 @@ describe("Extension Tests", () => {
             testFileEditor.selections = [new vscode.Selection(new vscode.Position(11, 3), new vscode.Position(11, 3))];
             assertDeleteTrailingSpaces(testFileEditor, settings, './files/delete_trailing_spaces_exclude_empty_line_when_exclude_current_line_highlight.js', done);
         });
+
+        // it("should not delete trailing spaces when language is set in syntaxIgnore", (done: MochaDone) => {
+        //     let settings: TralingSpacesSettings = Object.assign({}, defaultSettings);
+        //     settings.syntaxIgnore = [testFileEditor.document.languageId];
+        //     assertDeleteTrailingSpaces(testFileEditor, settings, './files/should_not_delete_spaces.js', done);
+        // });
     });
     afterEach((done: MochaDone) => {
         vscode.commands.executeCommand("workbench.action.files.revert").then(() => {
