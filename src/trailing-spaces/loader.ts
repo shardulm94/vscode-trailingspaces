@@ -3,7 +3,7 @@
 import * as vscode from 'vscode';
 import { LogLevel, ILogger, Logger } from './utils/logger';
 import { Config } from './config';
-import TrailingSpaces from './trailing-spaces';
+import { TrailingSpaces } from './trailing-spaces';
 
 export default class TrailingSpacesLoader {
 

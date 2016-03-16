@@ -6,12 +6,12 @@ import { Config } from './config';
 import jsdiff = require('diff');
 import fs = require('fs');
 
-interface TrailingRegions {
+export interface TrailingRegions {
     offendingLines: vscode.Range[],
     highlightable: vscode.Range[]
 }
 
-interface TralingSpacesSettings {
+export interface TralingSpacesSettings {
     includeEmptyLines: boolean,
     includeCurrentLine: boolean,
     regexp: string,
@@ -22,7 +22,7 @@ interface TralingSpacesSettings {
     saveAfterTrim: boolean
 }
 
-export default class TrailingSpaces {
+export class TrailingSpaces {
 
     private logger: ILogger;
     private config: Config;
@@ -47,7 +47,7 @@ export default class TrailingSpaces {
         this.matchedRegions = {};
         this.languagesToIgnore = {};
     }
-    
+
     public loadConfig(): void {
         this.settings = {
             includeEmptyLines: this.config.get<boolean>("includeEmptyLines"),
@@ -59,6 +59,10 @@ export default class TrailingSpaces {
             trimOnSave: this.config.get<boolean>("trimOnSave"),
             saveAfterTrim: this.config.get<boolean>("saveAfterTrim")
         }
+    }
+
+    public setSettings(settings: TralingSpacesSettings) {
+        this.settings = settings;
     }
 
     public addListeners(): void {
@@ -114,7 +118,7 @@ export default class TrailingSpaces {
             this.languagesToIgnore[language] = true;
         })
     }
-    
+
     public deleteTrailingSpaces(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit): void {
         editor.edit((editBuilder: vscode.TextEditorEdit) => {
             this.deleteTrailingRegions(editor, editBuilder, this.settings);
