@@ -119,6 +119,6 @@
     "license": "MIT",
     "bugs": {
         "url": "https://github.com/shardulm94/vscode-trailingspaces/issues"
-    },
-    "homepage": "https://github.com/shardulm94/vscode-trailingspaces#readme"
+  },
+  "homepage": "https://github.com/shardulm94/vscode-trailingspaces#readme"
 }
