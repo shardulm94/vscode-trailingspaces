@@ -16,9 +16,9 @@ This extension is a port of the popular [Sublime Text](https://www.sublimetext.c
     - [Delete - Modified Lines Only](#delete---modified-lines-only)
 	- [Highlight](#highlight)
 - [Options](#options)
-	- [Include Current Line](#include-current-line)
+	- [Highlight Current Line](#highlight-current-line)
 	- [Include Empty Lines](#include-empty-lines)
-    - [Modified Lines Only](#modified-lines-only)
+    - [Delete Modified Lines Only](#delete-modified-lines-only)
 	- [Trim On Save](#trim-on-save)
 	- [Save After Trim](#save-after-trim)
 	- [Live Matching vs On-demand Matching](#live-matching-vs-on-demand-matching)
@@ -88,7 +88,7 @@ Several options are available to customize the plugin's behavior. Those settings
 
 All settings are global (ie. applied to all opened documents).
 
-### Include Current Line
+### Highlight Current Line
 
 *Default: true*
 
@@ -96,7 +96,7 @@ Highlighting of trailing spaces in the currently edited line can be annoying:
 each time you are about to start a new word, the space you type is matched as a trailing spaces. Currently edited line can thus be ignored:
 
 ``` js
-{ "trailing-spaces.includeCurrentLine": false }
+{ "trailing-spaces.highlightCurrentLine": false }
 ```
 
 Even though the trailing spaces are not highlighted on this line, they are still internally matched and will be deleted when firing the deletion command.
@@ -113,7 +113,7 @@ When firing the deletion command, empty lines are matched as trailing regions, a
 
 They will not be highlighted either.
 
-### Modified Lines Only
+### Delete Modified Lines Only
 
 *Default: false*
 
@@ -122,7 +122,7 @@ When firing the deletion command, trailing regions *in the entire document* are 
 At any time, you can change which area is covered when deleting trailing regions by changing the setting:
 
 ``` js
-{ "trailing-spaces.modifiedLinesOnly": true }
+{ "trailing-spaces.deleteModifiedLinesOnly": true }
 ```
 
 ### Trim On Save

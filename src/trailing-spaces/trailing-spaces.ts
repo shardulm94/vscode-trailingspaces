@@ -13,10 +13,10 @@ interface TrailingRegions {
 
 interface TralingSpacesSettings {
     includeEmptyLines: boolean,
-    includeCurrentLine: boolean,
+    highlightCurrentLine: boolean,
     regexp: string,
     liveMatching: boolean,
-    modifiedLinesOnly: boolean,
+    deleteModifiedLinesOnly: boolean,
     syntaxIgnore: string[],
     trimOnSave: boolean,
     saveAfterTrim: boolean
@@ -51,10 +51,10 @@ export default class TrailingSpaces {
     public loadConfig(): void {
         this.settings = {
             includeEmptyLines: this.config.get<boolean>("includeEmptyLines"),
-            includeCurrentLine: this.config.get<boolean>("includeCurrentLine"),
+            highlightCurrentLine: this.config.get<boolean>("highlightCurrentLine"),
             regexp: this.config.get<string>("regexp"),
             liveMatching: this.config.get<boolean>("liveMatching"),
-            modifiedLinesOnly: this.config.get<boolean>("modifiedLinesOnly"),
+            deleteModifiedLinesOnly: this.config.get<boolean>("deleteModifiedLinesOnly"),
             syntaxIgnore: this.config.get<string[]>("syntaxIgnore"),
             trimOnSave: this.config.get<boolean>("trimOnSave"),
             saveAfterTrim: this.config.get<boolean>("saveAfterTrim")
@@ -126,7 +126,7 @@ export default class TrailingSpaces {
 
     public deleteTrailingSpacesModifiedLinesOnly(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit): void {
         let modifiedLinesSettings: TralingSpacesSettings = this.settings;
-        modifiedLinesSettings.modifiedLinesOnly = true;
+        modifiedLinesSettings.deleteModifiedLinesOnly = true;
         editor.edit((editBuilder: vscode.TextEditorEdit) => {
             this.deleteTrailingRegions(editor, editBuilder, modifiedLinesSettings);
         }).then(() => {
@@ -216,7 +216,7 @@ export default class TrailingSpaces {
         else
             regions = this.findTrailingSpaces(document, settings, currentLine);
 
-        if (settings.modifiedLinesOnly) {
+        if (settings.deleteModifiedLinesOnly) {
             let modifiedLines: number[] = this.getModifiedLineNumbers(document);
 
             function onlyThoseWithTrailingSpaces(regions: TrailingRegions, modifiedLines: number[]): TrailingRegions {
@@ -249,7 +249,7 @@ export default class TrailingSpaces {
             }
         }
 
-        if (!settings.includeCurrentLine && currentLine) {
+        if (!settings.highlightCurrentLine && currentLine) {
             let currentOffender: RegExpExecArray = offendingLinesRegexp.exec(currentLine.text);
             let currentOffenderRange: vscode.Range = (!currentOffender) ? null : (new vscode.Range(new vscode.Position(currentLine.lineNumber, currentLine.text.lastIndexOf(currentOffender[1])), currentLine.range.end));
             let removal: vscode.Range = (!currentOffenderRange) ? null : currentLine.range.intersection(currentOffenderRange);
