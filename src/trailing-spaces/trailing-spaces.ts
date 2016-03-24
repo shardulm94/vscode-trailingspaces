@@ -59,14 +59,18 @@ export class TrailingSpaces {
             trimOnSave: this.config.get<boolean>("trimOnSave"),
             saveAfterTrim: this.config.get<boolean>("saveAfterTrim")
         }
+        this.refreshLanguagesToIgnore();
+    }
+
+    private refreshLanguagesToIgnore() {
         this.languagesToIgnore = {};
         this.settings.syntaxIgnore.map((language: string) => {
             this.languagesToIgnore[language] = true;
         });
     }
-
     public setSettings(settings: TralingSpacesSettings) {
         this.settings = settings;
+        this.refreshLanguagesToIgnore();
     }
 
     public addListeners(): void {
@@ -118,9 +122,7 @@ export class TrailingSpaces {
             });
             this.logger.log("All visible text editors highlighted");
         }
-        this.settings.syntaxIgnore.map((language: string) => {
-            this.languagesToIgnore[language] = true;
-        });
+        this.refreshLanguagesToIgnore();
     }
 
     public deleteTrailingSpaces(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit): void {
