@@ -129,7 +129,7 @@ export class TrailingSpaces {
     }
 
     public deleteTrailingSpacesModifiedLinesOnly(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit): void {
-        let modifiedLinesSettings: TralingSpacesSettings = this.settings;
+        let modifiedLinesSettings: TralingSpacesSettings = Object.assign({}, this.settings);
         modifiedLinesSettings.deleteModifiedLinesOnly = true;
         editor.edit((editBuilder: vscode.TextEditorEdit) => {
             this.deleteTrailingRegions(editor, editBuilder, modifiedLinesSettings);
