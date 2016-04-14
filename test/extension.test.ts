@@ -70,6 +70,12 @@ describe("Extension Tests", () => {
             settings.syntaxIgnore = [testFileEditor.document.languageId];
             assertDeleteTrailingSpaces(testFileEditor, settings, './files/should_not_delete_spaces.js', done);
         });
+
+        it("should delete all trailing spaces including blank lines when regex is [\\s]+", (done: MochaDone) => {
+            let settings: TralingSpacesSettings = Object.assign({}, defaultSettings);
+            settings.regexp = "[\\s]+";
+            assertDeleteTrailingSpaces(testFileEditor, settings, './files/delete_all_trailing_spaces_including_blank_lines.js', done);
+        });
     });
     afterEach((done: MochaDone) => {
         vscode.commands.executeCommand("workbench.action.files.revert").then(() => {
