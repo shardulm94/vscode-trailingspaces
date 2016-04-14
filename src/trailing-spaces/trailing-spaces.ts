@@ -252,34 +252,49 @@ export class TrailingSpaces {
         let regexp: string = "(" + settings.regexp + ")$";
         let noEmptyLinesRegexp = "\\S" + regexp;
 
-        let offendingLines: vscode.Range[] = [];
-        let offendingLinesRegexp: RegExp = new RegExp(settings.includeEmptyLines ? regexp : noEmptyLinesRegexp);
+        let offendingRanges: vscode.Range[] = [];
+        let offendingRangesRegexp: RegExp = new RegExp(settings.includeEmptyLines ? regexp : noEmptyLinesRegexp, "gm");
+        let documentText: string = document.getText();
 
-        for (let i: number = 0; i < document.lineCount; i++) {
-            let line: vscode.TextLine = document.lineAt(i);
-            let match: RegExpExecArray = offendingLinesRegexp.exec(line.text);
-            if (match) {
-                offendingLines.push(new vscode.Range(new vscode.Position(i, line.text.lastIndexOf(match[1])), line.range.end));
-            }
+        let match: RegExpExecArray;
+        while (match = offendingRangesRegexp.exec(documentText)) {
+            let matchRange: vscode.Range = new vscode.Range(document.positionAt(match.index + match[0].length - match[1].length), document.positionAt(match.index + match[0].length));
+            if (!matchRange.isEmpty)
+                offendingRanges.push(matchRange);
         }
 
         if (!settings.highlightCurrentLine && currentLine) {
-            let currentOffender: RegExpExecArray = offendingLinesRegexp.exec(currentLine.text);
-            let currentOffenderRange: vscode.Range = (!currentOffender) ? null : (new vscode.Range(new vscode.Position(currentLine.lineNumber, currentLine.text.lastIndexOf(currentOffender[1])), currentLine.range.end));
-            let removal: vscode.Range = (!currentOffenderRange) ? null : currentLine.range.intersection(currentOffenderRange);
             let highlightable: vscode.Range[] = [];
+            let lineText: string = currentLine.text + '\n';
+            let currentOffender: RegExpExecArray = offendingRangesRegexp.exec(lineText);
+            let currentOffenderRange: vscode.Range = (!currentOffender) ? null : (new vscode.Range(new vscode.Position(currentLine.lineNumber, lineText.lastIndexOf(currentOffender[1])), currentLine.range.end));
+            let removal: vscode.Range = (!currentOffenderRange) ? null : currentLine.range.intersection(currentOffenderRange);
             if (removal) {
-                for (let i: number = 0; i < offendingLines.length; i++) {
-                    if (!offendingLines[i].isEqual(currentOffenderRange)) {
-                        highlightable.push(offendingLines[i]);
+                for (let i: number = 0; i < offendingRanges.length; i++) {
+                    if (!offendingRanges[i].contains(currentOffenderRange)) {
+                        highlightable.push(offendingRanges[i]);
+                    } else {
+                        function splitRange(range: vscode.Range): vscode.Range[] {
+                            let returnRanges: vscode.Range[] = [];
+                            for (let i: number = range.start.line; i <= range.end.line; i++) {
+                                returnRanges.push(document.lineAt(i).range.intersection(range));
+                            }
+                            return returnRanges;
+                        }
+                        let lineNumber: number = currentLine.lineNumber;
+                        let splitRanges: vscode.Range[] = splitRange(offendingRanges[i]);
+                        for (let i: number = 0; i < splitRanges.length; i++) {
+                            if (splitRanges[i].start.line != lineNumber)
+                                highlightable.push(splitRanges[i]);
+                        }
                     }
                 }
             } else {
-                highlightable = offendingLines;
+                highlightable = offendingRanges;
             }
-            return { offendingLines: offendingLines, highlightable: highlightable };
+            return { offendingLines: offendingRanges, highlightable: highlightable };
         } else {
-            return { offendingLines: offendingLines, highlightable: offendingLines };
+            return { offendingLines: offendingRanges, highlightable: offendingRanges };
         }
     }
 
