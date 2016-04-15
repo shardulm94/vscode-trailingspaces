@@ -75,6 +75,7 @@ export class TrailingSpaces {
 
     public addListeners(): void {
         vscode.window.onDidChangeActiveTextEditor((editor: vscode.TextEditor) => {
+            if (!editor) return;
             this.logger.log("onDidChangeActiveTextEditor event called - " + editor.document.fileName);
             if (this.settings.liveMatching)
                 return this.matchTrailingSpaces(editor);
