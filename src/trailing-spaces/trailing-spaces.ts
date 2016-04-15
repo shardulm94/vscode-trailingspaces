@@ -35,6 +35,7 @@ export class TrailingSpaces {
     };
     private decorationType: vscode.TextEditorDecorationType;
     private matchedRegions: { [id: string]: TrailingRegions; };
+    private onDisk: { [id: string]: string; };
     private languagesToIgnore: { [id: string]: boolean; };
     private settings: TralingSpacesSettings;
     private highlightSettings: TralingSpacesSettings;
@@ -44,6 +45,7 @@ export class TrailingSpaces {
         this.config = Config.getInstance();
         this.languagesToIgnore = {};
         this.matchedRegions = {};
+        this.onDisk = {};
         this.loadConfig();
         this.decorationType = vscode.window.createTextEditorDecorationType(this.decorationOptions);
     }
@@ -77,6 +79,7 @@ export class TrailingSpaces {
         vscode.window.onDidChangeActiveTextEditor((editor: vscode.TextEditor) => {
             if (!editor) return;
             this.logger.log("onDidChangeActiveTextEditor event called - " + editor.document.fileName);
+            this.freezeLastVersion(editor.document);
             if (this.settings.liveMatching)
                 return this.matchTrailingSpaces(editor);
             return;
@@ -109,10 +112,18 @@ export class TrailingSpaces {
                         editor.edit((editBuilder: vscode.TextEditorEdit) => {
                             this.deleteTrailingSpaces(editor, editBuilder);
                         }).then(() => {
-                            editor.document.save();
+                            editor.document.save().then(() => {
+                                this.freezeLastVersion(editor.document);
+                            });
                         });
+                    } else {
+                        this.freezeLastVersion(editor.document);
                     }
             });
+        });
+        vscode.workspace.onDidCloseTextDocument((document: vscode.TextDocument) => {
+            this.logger.log("onDidCloseTextDocument event called - " + document.fileName);
+            this.onDisk[document.uri.toString()] = null;
         });
     }
 
@@ -215,12 +226,14 @@ export class TrailingSpaces {
     }
 
     private getModifiedLineNumbers(document: vscode.TextDocument): number[] {
-        let onDisk: string = null;
-        if (document.fileName)
-            onDisk = fs.readFileSync(document.fileName, "utf-8");
         let onBuffer: string = document.getText();
+        return this.modifiedLinesAsNumbers(this.onDisk[document.uri.toString()], onBuffer);
+    }
 
-        return this.modifiedLinesAsNumbers(onDisk, onBuffer);
+    public freezeLastVersion(document: vscode.TextDocument) {
+        if (!document.fileName) return;
+        this.onDisk[document.uri.toString()] = fs.readFileSync(document.fileName, "utf-8");
+        this.logger.log("File frozen - " + document.fileName);
     }
 
     private findRegionsToDelete(document: vscode.TextDocument, settings: TralingSpacesSettings, currentLine: vscode.TextLine = null): vscode.Range[] {
