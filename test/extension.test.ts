@@ -99,11 +99,12 @@ describe("Extension Tests", () => {
 
 let assertDeleteTrailingSpaces = (editor: vscode.TextEditor, settings: TralingSpacesSettings, expectedOutputFile: string, done: MochaDone): void => {
     let outputFile: string = fs.readFileSync(path.join(__dirname, expectedOutputFile), "utf-8");
-    vscode.commands.executeCommand("trailing-spaces.setSettings", settings).then(() => {
+    vscode.commands.executeCommand("trailing-spaces.setSettings", settings);
+    setTimeout(() => {
         vscode.commands.executeCommand("trailing-spaces.deleteTrailingSpaces");
         setTimeout(() => {
             assert.equal(editor.document.getText(), outputFile);
             done();
         }, 200);
-    });
+    }, 200);
 };
