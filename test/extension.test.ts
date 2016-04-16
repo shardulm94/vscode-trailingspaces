@@ -92,19 +92,18 @@ describe("Extension Tests", () => {
     afterEach((done: MochaDone) => {
         console.log("Reverting changes");
         vscode.commands.executeCommand("workbench.action.files.revert");
-        setTimeout(done, 500);
+        setTimeout(done, 200);
     });
 
 });
 
 let assertDeleteTrailingSpaces = (editor: vscode.TextEditor, settings: TralingSpacesSettings, expectedOutputFile: string, done: MochaDone): void => {
     let outputFile: string = fs.readFileSync(path.join(__dirname, expectedOutputFile), "utf-8");
-    vscode.commands.executeCommand("trailing-spaces.setSettings", settings);
-    setTimeout(() => {
+    vscode.commands.executeCommand("trailing-spaces.setSettings", JSON.stringify(settings)).then(() => {
         vscode.commands.executeCommand("trailing-spaces.deleteTrailingSpaces");
         setTimeout(() => {
             assert.equal(editor.document.getText(), outputFile);
             done();
         }, 200);
-    }, 200);
+    });
 };

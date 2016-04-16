@@ -70,11 +70,10 @@ export class TrailingSpaces {
             this.languagesToIgnore[language] = true;
         });
     }
-    public setSettings(settings: TralingSpacesSettings) {
-        this.settings = settings;
+    public setSettings(settings: string) {
+        this.settings = JSON.parse(settings);
         this.matchedRegions = {};
         this.refreshLanguagesToIgnore();
-        this.logger.log("Settings overriden");
     }
 
     public addListeners(): void {
