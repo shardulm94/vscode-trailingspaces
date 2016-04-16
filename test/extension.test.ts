@@ -16,7 +16,7 @@ describe("Extension Tests", () => {
     let testFileUri: vscode.Uri = vscode.Uri.file(path.join(__dirname, "files/sample.js"));
     let testFile: vscode.TextDocument;
     let testFileEditor: vscode.TextEditor;
-    let trailingSpaces: TrailingSpaces;
+    let trailingSpaces: TrailingSpaces = new TrailingSpaces();;
     let defaultSettings: TralingSpacesSettings = {
         includeEmptyLines: true,
         highlightCurrentLine: true,
@@ -27,12 +27,8 @@ describe("Extension Tests", () => {
         trimOnSave: false,
         saveAfterTrim: false
     }
+    trailingSpaces.setSettings(defaultSettings);
 
-    before((done: MochaDone) => {
-        trailingSpaces = new TrailingSpaces();
-        trailingSpaces.setSettings(defaultSettings);
-        done();
-    });
     beforeEach((done: MochaDone) => {
         vscode.workspace.openTextDocument(testFileUri).then((document: vscode.TextDocument) => {
             testFile = document;
