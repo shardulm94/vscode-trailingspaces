@@ -36,7 +36,7 @@ VS Code provides a way to automate deletion of trailing spaces *by using the Tri
 Installation
 ------------
 
-It is available through [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=shardulm94.trailing-spaces) and this is the recommended way of installation (brings automatic updates with changelogs…).
+It is available through [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=shardulm94.trailing-spaces) and this is the recommended way of installation (brings integrated updates).
 
 
 Usage
@@ -114,6 +114,8 @@ When firing the deletion command, empty lines are matched as trailing regions, a
 ```
 
 They will not be highlighted either.
+
+*Note:* This option only deletes the trailing spaces in blank lines and not the whole line itself. If you want to delete the newline character as well, please consider [changing the regex](#the-matching-pattern).
 
 ### Delete Modified Lines Only
 
