@@ -72,7 +72,9 @@ export class TrailingSpaces {
     }
     public setSettings(settings: TralingSpacesSettings) {
         this.settings = settings;
+        this.matchedRegions = {};
         this.refreshLanguagesToIgnore();
+        this.logger.log("Settings overriden");
     }
 
     public addListeners(): void {
@@ -163,7 +165,7 @@ export class TrailingSpaces {
 
     private deleteTrailingRegions(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit, settings: TralingSpacesSettings): void {
         let message: string;
-
+        
         if (this.ignoreFile(editor)) {
             message = "File with langauge '" + editor.document.languageId + "' ignored.";
         } else {
@@ -269,7 +271,7 @@ export class TrailingSpaces {
         let offendingRanges: vscode.Range[] = [];
         let offendingRangesRegexp: RegExp = new RegExp(settings.includeEmptyLines ? regexp : noEmptyLinesRegexp, "gm");
         let documentText: string = document.getText();
-
+        
         let match: RegExpExecArray;
         while (match = offendingRangesRegexp.exec(documentText)) {
             let matchRange: vscode.Range = new vscode.Range(document.positionAt(match.index + match[0].length - match[1].length), document.positionAt(match.index + match[0].length));
