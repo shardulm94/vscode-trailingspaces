@@ -141,38 +141,39 @@ export class TrailingSpaces {
     }
 
     public deleteTrailingSpaces(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit): void {
-        editor.edit((editBuilder: vscode.TextEditorEdit) => {
-            this.deleteTrailingRegions(editor.document, this.settings, editor.document.lineAt(editor.selection.end), editBuilder);
-        }).then(() => {
-            if (this.settings.saveAfterTrim && !this.settings.trimOnSave)
-                editor.document.save();
-        });
+        this.deleteTrailingSpacesCore(editor.document, editor.selection, this.settings);
     }
 
     public deleteTrailingSpacesModifiedLinesOnly(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit): void {
         let modifiedLinesSettings: TralingSpacesSettings = Object.assign({}, this.settings);
         modifiedLinesSettings.deleteModifiedLinesOnly = true;
-        editor.edit((editBuilder: vscode.TextEditorEdit) => {
-            this.deleteTrailingRegions(editor.document, modifiedLinesSettings, editor.document.lineAt(editor.selection.end), editBuilder);
-        }).then(() => {
-            if (this.settings.saveAfterTrim && !this.settings.trimOnSave)
-                editor.document.save();
-        });
+        this.deleteTrailingSpacesCore(editor.document, editor.selection, modifiedLinesSettings);
     }
 
     public highlightTrailingSpaces(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit): void {
         this.matchTrailingSpaces(editor);
     }
 
-    public deleteInFolderLeaf(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit): void {
-        this.deleteInFolder(editor.document, false);
+    public deleteInFolder(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit): void {
+        this.deleteInFolderCore(editor.document, false);
     }
 
     public deleteInFolderRecursive(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit): void {
-        this.deleteInFolder(editor.document, true);
+        this.deleteInFolderCore(editor.document, true);
     }
 
-    private deleteInFolder(document: vscode.TextDocument, recursive: boolean = false): void {
+    private deleteTrailingSpacesCore(document: vscode.TextDocument, selection: vscode.Selection, settings: TralingSpacesSettings): void {
+        let workspaceEdit: vscode.WorkspaceEdit = new vscode.WorkspaceEdit();
+        this.deleteTrailingRegions(document, settings, document.lineAt(selection.end), workspaceEdit);
+        if (workspaceEdit.size > 0) {
+            vscode.workspace.applyEdit(workspaceEdit).then(() => {
+                if (this.settings.saveAfterTrim && !this.settings.trimOnSave)
+                    document.save();
+            });
+        }
+    }
+
+    private deleteInFolderCore(document: vscode.TextDocument, recursive: boolean = false): void {
         let folderPath: string = path.dirname(document.uri.fsPath);
         this.logger.log("Deleting trailing spaces in folder (" + (recursive ? "" : "non-") + "recursive) - " + folderPath);
         let workspaceEdit: vscode.WorkspaceEdit = new vscode.WorkspaceEdit();
@@ -202,7 +203,7 @@ export class TrailingSpaces {
                 totalFilesProcessed++;
                 if (!document) return;
                 let edits: number = 0;
-                edits = this.deleteTrailingRegions(document, this.settings, null, null, workspaceEdit);
+                edits = this.deleteTrailingRegions(document, this.settings, null, workspaceEdit);
                 if (edits !== undefined) totalEdits += edits;
                 else ignoredFiles++;
                 vscode.window.setStatusBarMessage("Processing: " + totalFilesProcessed + "/" + filePaths.length + " - " + filePath);
@@ -225,7 +226,7 @@ export class TrailingSpaces {
         });
     }
 
-    private deleteTrailingRegions(document: vscode.TextDocument, settings: TralingSpacesSettings, currentLine: vscode.TextLine, editorEdit?: vscode.TextEditorEdit, workspaceEdit?: vscode.WorkspaceEdit): number {
+    private deleteTrailingRegions(document: vscode.TextDocument, settings: TralingSpacesSettings, currentLine: vscode.TextLine, workspaceEdit: vscode.WorkspaceEdit): number {
         let message: string;
         let edits: number = 0;
         if (this.ignoreFile(document)) {
@@ -237,10 +238,7 @@ export class TrailingSpaces {
             if (regions) {
                 regions.reverse();
                 regions.forEach((region: vscode.Range) => {
-                    if (editorEdit)
-                        editorEdit.delete(region);
-                    else if (workspaceEdit)
-                        workspaceEdit.delete(document.uri, region);
+                    workspaceEdit.delete(document.uri, region);
                 });
             }
 
