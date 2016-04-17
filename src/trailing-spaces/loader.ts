@@ -27,7 +27,8 @@ export default class TrailingSpacesLoader {
         vscode.commands.registerTextEditorCommand('trailing-spaces.deleteTrailingSpaces', this.trailingSpaces.deleteTrailingSpaces, this.trailingSpaces);
         vscode.commands.registerTextEditorCommand('trailing-spaces.deleteTrailingSpacesModifiedLinesOnly', this.trailingSpaces.deleteTrailingSpacesModifiedLinesOnly, this.trailingSpaces);
         vscode.commands.registerTextEditorCommand('trailing-spaces.highlightTrailingSpaces', this.trailingSpaces.highlightTrailingSpaces, this.trailingSpaces);
-        vscode.commands.registerCommand('trailing-spaces.deleteInFolder', this.trailingSpaces.deleteInFolder, this.trailingSpaces);
+        vscode.commands.registerTextEditorCommand('trailing-spaces.deleteInFolderLeaf', this.trailingSpaces.deleteInFolderLeaf, this.trailingSpaces);
+        vscode.commands.registerTextEditorCommand('trailing-spaces.deleteInFolderRecursive', this.trailingSpaces.deleteInFolderRecursive, this.trailingSpaces);
         vscode.commands.registerCommand('trailing-spaces.loadConfig', this.trailingSpaces.loadConfig, this.trailingSpaces);
         this.trailingSpaces.addListeners();
         this.logger.log("Trailing Spaces activated.");

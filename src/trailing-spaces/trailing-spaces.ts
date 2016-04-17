@@ -5,6 +5,9 @@ import { LogLevel, ILogger, Logger } from './utils/logger';
 import { Config } from './config';
 import jsdiff = require('diff');
 import fs = require('fs');
+import path = require('path');
+import glob = require('glob');
+import {TextEditorEdit, WorkspaceEdit} from 'vscode';
 
 export interface TrailingRegions {
     offendingLines: vscode.Range[],
@@ -139,7 +142,7 @@ export class TrailingSpaces {
 
     public deleteTrailingSpaces(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit): void {
         editor.edit((editBuilder: vscode.TextEditorEdit) => {
-            this.deleteTrailingRegions(editor, editBuilder, this.settings);
+            this.deleteTrailingRegions(editor.document, this.settings, editor.document.lineAt(editor.selection.end), editBuilder);
         }).then(() => {
             if (this.settings.saveAfterTrim && !this.settings.trimOnSave)
                 editor.document.save();
@@ -150,7 +153,7 @@ export class TrailingSpaces {
         let modifiedLinesSettings: TralingSpacesSettings = Object.assign({}, this.settings);
         modifiedLinesSettings.deleteModifiedLinesOnly = true;
         editor.edit((editBuilder: vscode.TextEditorEdit) => {
-            this.deleteTrailingRegions(editor, editBuilder, modifiedLinesSettings);
+            this.deleteTrailingRegions(editor.document, modifiedLinesSettings, editor.document.lineAt(editor.selection.end), editBuilder);
         }).then(() => {
             if (this.settings.saveAfterTrim && !this.settings.trimOnSave)
                 editor.document.save();
@@ -161,22 +164,83 @@ export class TrailingSpaces {
         this.matchTrailingSpaces(editor);
     }
 
-    public deleteInFolder(recursive?: boolean): void {
-        
+    public deleteInFolderLeaf(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit): void {
+        this.deleteInFolder(editor.document, false);
     }
 
-    private deleteTrailingRegions(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit, settings: TralingSpacesSettings): void {
-        let message: string;
+    public deleteInFolderRecursive(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit): void {
+        this.deleteInFolder(editor.document, true);
+    }
 
-        if (this.ignoreFile(editor)) {
-            message = "File with langauge '" + editor.document.languageId + "' ignored.";
+    private deleteInFolder(document: vscode.TextDocument, recursive: boolean = false): void {
+        let folderPath: string = path.dirname(document.uri.fsPath);
+        this.logger.log("Deleting trailing spaces in folder (" + (recursive ? "" : "non-") + "recursive) - " + folderPath);
+        let workspaceEdit: vscode.WorkspaceEdit = new vscode.WorkspaceEdit();
+        let totalFilesProcessed: number = 0;
+        let totalEdits: number = 0;
+        let ignoredFiles: number = 0;
+        let globsToIgnore: string[] = [];
+
+        function getTrueKeys(obj: Object): string[] {
+            let trueKeys: string[] = [];
+            for (var key in obj) {
+                if (obj.hasOwnProperty(key) && obj[key] == true) {
+                    trueKeys.push(key);
+                }
+            }
+            return trueKeys;
+        }
+
+        globsToIgnore = globsToIgnore.concat(getTrueKeys(vscode.workspace.getConfiguration('search').get<any>('exclude')));
+        globsToIgnore = globsToIgnore.map((g: string) => { return "**/" + g + "/**" });
+        globsToIgnore = globsToIgnore.concat(getTrueKeys(vscode.workspace.getConfiguration('files').get<any>('exclude')));
+        let filePaths: string[] = glob.sync(folderPath + (recursive ? "/**" : "") + "/*.*", { nodir: true, ignore: globsToIgnore });
+
+        let promises: PromiseLike<void>[] = [];
+        filePaths.forEach((filePath: string) => {
+            let promise: PromiseLike<void> = vscode.workspace.openTextDocument(vscode.Uri.file(filePath)).then((document: vscode.TextDocument) => {
+                totalFilesProcessed++;
+                if (!document) return;
+                let edits: number = 0;
+                edits = this.deleteTrailingRegions(document, this.settings, null, null, workspaceEdit);
+                if (edits !== undefined) totalEdits += edits;
+                else ignoredFiles++;
+                vscode.window.setStatusBarMessage("Processing: " + totalFilesProcessed + "/" + filePaths.length + " - " + filePath);
+                this.logger.log("Processing: " + totalFilesProcessed + "/" + filePaths.length + " - " + filePath);
+            }, (reason: any) => {
+                this.logger.log(reason);
+            });
+            promises.push(promise);
+        }, this);
+        Promise.all(promises).then(() => {
+            if (workspaceEdit.size > 0) {
+                vscode.workspace.applyEdit(workspaceEdit).then(() => {
+                    vscode.window.setStatusBarMessage("Deleted " + totalEdits + " trailing spaces in " + (totalFilesProcessed - ignoredFiles) + " files. " + ignoredFiles + " files ignored.");
+                });
+            } else {
+                vscode.window.setStatusBarMessage("No trailing spaces to delete in " + (totalFilesProcessed - ignoredFiles) + " files. " + ignoredFiles + " files ignored.");
+            }
+        }, (reason: any) => {
+            this.logger.log(reason);
+        });
+    }
+
+    private deleteTrailingRegions(document: vscode.TextDocument, settings: TralingSpacesSettings, currentLine: vscode.TextLine, editorEdit?: vscode.TextEditorEdit, workspaceEdit?: vscode.WorkspaceEdit): number {
+        let message: string;
+        let edits: number = 0;
+        if (this.ignoreFile(document)) {
+            message = "File with langauge '" + document.languageId + "' ignored.";
+            edits = undefined;
         } else {
-            let regions: vscode.Range[] = this.findRegionsToDelete(editor.document, settings, editor.document.lineAt(editor.selection.end));
+            let regions: vscode.Range[] = this.findRegionsToDelete(document, settings, currentLine);
 
             if (regions) {
                 regions.reverse();
                 regions.forEach((region: vscode.Range) => {
-                    editorEdit.delete(region);
+                    if (editorEdit)
+                        editorEdit.delete(region);
+                    else if (workspaceEdit)
+                        workspaceEdit.delete(document.uri, region);
                 });
             }
 
@@ -185,14 +249,16 @@ export class TrailingSpaces {
             } else {
                 message = "No trailing spaces to delete!";
             }
+            edits += regions.length;
         }
         this.logger.log(message);
         vscode.window.setStatusBarMessage(message, 3000);
+        return edits;
     }
 
     private matchTrailingSpaces(editor: vscode.TextEditor): void {
         let regions: TrailingRegions = { offendingLines: [], highlightable: [] };
-        if (this.ignoreFile(editor)) {
+        if (this.ignoreFile(editor.document)) {
             this.logger.log("File with langauge '" + editor.document.languageId + "' ignored.");
         } else {
             regions = this.findTrailingSpaces(editor.document, this.settings, editor.document.lineAt(editor.selection.end));
@@ -201,9 +267,9 @@ export class TrailingSpaces {
         this.highlightTrailingSpacesRegions(editor, regions.highlightable);
     }
 
-    private ignoreFile(editor: vscode.TextEditor): boolean {
-        let viewSyntax: string = editor.document.languageId;
-        return (this.languagesToIgnore[viewSyntax] == true);
+    private ignoreFile(document: vscode.TextDocument): boolean {
+        let viewSyntax: string = document.languageId;
+        return viewSyntax ? (this.languagesToIgnore[viewSyntax] == true) : false;
     }
 
     private addTrailingSpacesRegions(document: vscode.TextDocument, regions: TrailingRegions): void {
