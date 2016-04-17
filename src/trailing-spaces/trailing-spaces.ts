@@ -161,6 +161,10 @@ export class TrailingSpaces {
         this.matchTrailingSpaces(editor);
     }
 
+    public deleteInFolder(recursive?: boolean): void {
+        
+    }
+
     private deleteTrailingRegions(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit, settings: TralingSpacesSettings): void {
         let message: string;
 

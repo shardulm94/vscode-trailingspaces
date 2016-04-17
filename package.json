@@ -74,15 +74,23 @@
         "commands": [
             {
                 "command": "trailing-spaces.deleteTrailingSpaces",
-                "title": "Trailing Spaces: Delete"
+                "title": "Delete",
+                "category": "Trailing Spaces"
             },
             {
                 "command": "trailing-spaces.deleteTrailingSpacesModifiedLinesOnly",
-                "title": "Trailing Spaces: Delete - Modified Lines Only"
+                "title": "Delete - Modified Lines Only",
+                "category": "Trailing Spaces"
             },
             {
                 "command": "trailing-spaces.highlightTrailingSpaces",
-                "title": "Trailing Spaces: Highlight"
+                "title": "Highlight",
+                "category": "Trailing Spaces"
+            },
+            {
+                "command": "trailing-spaces.deleteInFolder",
+                "title": "Delete in Folder",
+                "category": "Trailing Spaces"
             }
         ]
     },
