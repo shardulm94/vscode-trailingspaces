@@ -100,6 +100,11 @@
     ]
   },
   "activationEvents": [
+    "onCommand:trailing-spaces.deleteTrailingSpaces",
+    "onCommand:trailing-spaces.deleteTrailingSpacesModifiedLinesOnly",
+    "onCommand:trailing-spaces.highlightTrailingSpaces",
+    "onCommand:trailing-spaces.deleteInFolder",
+    "onCommand:trailing-spaces.deleteInFolderRecursive",
     "*"
   ],
   "scripts": {
