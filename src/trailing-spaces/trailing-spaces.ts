@@ -231,9 +231,9 @@ export class TrailingSpaces {
     }
 
     public freezeLastVersion(document: vscode.TextDocument) {
-        if (!document.fileName) return;
-        this.onDisk[document.uri.toString()] = fs.readFileSync(document.fileName, "utf-8");
-        this.logger.log("File frozen - " + document.fileName);
+        if (document.isUntitled) return;
+        this.onDisk[document.uri.toString()] = fs.readFileSync(document.uri.fsPath, "utf-8");
+        this.logger.log("File frozen - " + document.uri.fsPath);
     }
 
     private findRegionsToDelete(document: vscode.TextDocument, settings: TralingSpacesSettings, currentLine: vscode.TextLine = null): vscode.Range[] {
@@ -244,7 +244,7 @@ export class TrailingSpaces {
         else
             regions = this.findTrailingSpaces(document, settings, currentLine);
 
-        if (settings.deleteModifiedLinesOnly) {
+        if (settings.deleteModifiedLinesOnly && !document.isUntitled) {
             let modifiedLines: number[] = this.getModifiedLineNumbers(document);
 
             function onlyThoseWithTrailingSpaces(regions: TrailingRegions, modifiedLines: number[]): TrailingRegions {
