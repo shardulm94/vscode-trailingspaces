@@ -86,16 +86,6 @@
         "command": "trailing-spaces.highlightTrailingSpaces",
         "title": "Highlight",
         "category": "Trailing Spaces"
-      // },
-      // {
-      //   "command": "trailing-spaces.deleteInFolder",
-      //   "title": "Delete in Folder",
-      //   "category": "Trailing Spaces"
-      // },
-      // {
-      //   "command": "trailing-spaces.deleteInFolderRecursive",
-      //   "title": "Delete in Folder - Recursive",
-      //   "category": "Trailing Spaces"
       }
     ]
   },
