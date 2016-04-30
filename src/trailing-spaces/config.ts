@@ -1,7 +1,7 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { LogLevel, ILogger, Logger } from './utils/logger';
+import { LogLevel, ILogger, Logger } from './logger';
 
 export class Config {
 

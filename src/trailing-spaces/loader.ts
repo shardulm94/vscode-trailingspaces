@@ -1,7 +1,7 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { LogLevel, ILogger, Logger } from './utils/logger';
+import { LogLevel, ILogger, Logger } from './logger';
 import { Config } from './config';
 import { TrailingSpaces } from './trailing-spaces';
 
@@ -24,9 +24,9 @@ export default class TrailingSpacesLoader {
     public activate(subscriptions: vscode.Disposable[]): void {
         subscriptions.push(this);
         vscode.workspace.onDidChangeConfiguration(this.config.load, this.config, subscriptions);
-        vscode.commands.registerTextEditorCommand('trailing-spaces.deleteTrailingSpaces', this.trailingSpaces.deleteTrailingSpaces, this.trailingSpaces);
-        vscode.commands.registerTextEditorCommand('trailing-spaces.deleteTrailingSpacesModifiedLinesOnly', this.trailingSpaces.deleteTrailingSpacesModifiedLinesOnly, this.trailingSpaces);
-        vscode.commands.registerTextEditorCommand('trailing-spaces.highlightTrailingSpaces', this.trailingSpaces.highlightTrailingSpaces, this.trailingSpaces);
+        vscode.commands.registerTextEditorCommand('trailing-spaces.deleteTrailingSpaces', this.trailingSpaces.delete, this.trailingSpaces);
+        vscode.commands.registerTextEditorCommand('trailing-spaces.deleteTrailingSpacesModifiedLinesOnly', this.trailingSpaces.deleteModifiedLinesOnly, this.trailingSpaces);
+        vscode.commands.registerTextEditorCommand('trailing-spaces.highlightTrailingSpaces', this.trailingSpaces.highlight, this.trailingSpaces);
         vscode.commands.registerTextEditorCommand('trailing-spaces.deleteInFolder', this.trailingSpaces.deleteInFolder, this.trailingSpaces);
         vscode.commands.registerTextEditorCommand('trailing-spaces.deleteInFolderRecursive', this.trailingSpaces.deleteInFolderRecursive, this.trailingSpaces);
         vscode.commands.registerCommand('trailing-spaces.loadConfig', this.trailingSpaces.loadConfig, this.trailingSpaces);
@@ -38,6 +38,4 @@ export default class TrailingSpacesLoader {
     public dispose(): void {
 
     }
-
-
 }
