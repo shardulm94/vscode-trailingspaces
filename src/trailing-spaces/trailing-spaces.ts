@@ -80,7 +80,7 @@ export class TrailingSpaces {
     public addListeners(): void {
         vscode.window.onDidChangeActiveTextEditor((editor: vscode.TextEditor) => {
             if (!editor) return;
-            this.logger.log("onDidChangeActiveTextEditor event called - " + editor.document.fileName);
+            this.logger.log(`onDidChangeActiveTextEditor event called - ${editor.document.fileName}`);
             this.freezeLastVersion(editor.document);
             if (this.settings.liveMatching)
                 return this.matchTrailingSpaces(editor);
@@ -88,25 +88,25 @@ export class TrailingSpaces {
         });
         vscode.window.onDidChangeTextEditorSelection((e: vscode.TextEditorSelectionChangeEvent) => {
             let editor = e.textEditor;
-            this.logger.log("onDidChangeTextEditorSelection event called - " + editor.document.fileName);
+            this.logger.log(`onDidChangeTextEditorSelection event called - ${editor.document.fileName}`);
             if (this.settings.liveMatching)
                 this.matchTrailingSpaces(editor);
             return;
         });
         vscode.workspace.onDidChangeTextDocument((e: vscode.TextDocumentChangeEvent) => {
-            this.logger.log("onDidChangeTextDocument event called - " + e.document.fileName);
+            this.logger.log(`onDidChangeTextDocument event called - ${e.document.fileName}`);
             if (vscode.window.activeTextEditor && vscode.window.activeTextEditor.document == e.document)
                 if (this.settings.liveMatching)
                     this.matchTrailingSpaces(vscode.window.activeTextEditor);
         });
         vscode.workspace.onDidOpenTextDocument((document: vscode.TextDocument) => {
-            this.logger.log("onDidOpenTextDocument event called - " + document.fileName);
+            this.logger.log(`onDidOpenTextDocument event called - ${document.fileName}`);
             if (vscode.window.activeTextEditor && vscode.window.activeTextEditor.document == document)
                 if (this.settings.liveMatching)
                     this.matchTrailingSpaces(vscode.window.activeTextEditor);
         });
         vscode.workspace.onDidSaveTextDocument((document: vscode.TextDocument) => {
-            this.logger.log("onDidSaveTextDocument event called - " + document.fileName);
+            this.logger.log(`onDidSaveTextDocument event called - ${document.fileName}`);
             vscode.window.visibleTextEditors.forEach((editor: vscode.TextEditor) => {
                 if (document.uri === editor.document.uri)
                     if (this.settings.trimOnSave) {
@@ -123,7 +123,7 @@ export class TrailingSpaces {
             });
         });
         vscode.workspace.onDidCloseTextDocument((document: vscode.TextDocument) => {
-            this.logger.log("onDidCloseTextDocument event called - " + document.fileName);
+            this.logger.log(`onDidCloseTextDocument event called - ${document.fileName}`);
             this.onDisk[document.uri.toString()] = null;
         });
     }
@@ -173,7 +173,7 @@ export class TrailingSpaces {
 
     private deleteInFolderCore(document: vscode.TextDocument, recursive: boolean = false): void {
         let folderPath: string = path.dirname(document.uri.fsPath);
-        this.logger.info("Deleting trailing spaces in folder (" + (recursive ? "" : "non-") + "recursive) - " + folderPath);
+        this.logger.info(`Deleting trailing spaces in folder (${recursive ? "" : "non-"}recursive) - ${folderPath}`);
         let workspaceEdit: vscode.WorkspaceEdit = new vscode.WorkspaceEdit();
         let totalFilesProcessed: number = 0;
         let totalEdits: number = 0;
@@ -194,7 +194,7 @@ export class TrailingSpaces {
                 edits = this.deleteTrailingRegions(document, this.settings, null, workspaceEdit);
                 if (edits !== undefined) totalEdits += edits;
                 else ignoredFiles++;
-                let message: string = "Processing: " + totalFilesProcessed + "/" + filePaths.length + " - " + filePath;
+                let message: string = `Processing: ${totalFilesProcessed}/${filePaths.length} - ${filePath}`;
                 vscode.window.setStatusBarMessage(message);
                 this.logger.info(message);
             }, (reason: any) => {
@@ -205,12 +205,12 @@ export class TrailingSpaces {
         Promise.all(promises).then(() => {
             if (workspaceEdit.size > 0) {
                 vscode.workspace.applyEdit(workspaceEdit).then(() => {
-                    let message: string = "Deleted " + totalEdits + " trailing spaces in " + (totalFilesProcessed - ignoredFiles) + " files. " + ignoredFiles + " files ignored.";
+                    let message: string = `Deleted ${totalEdits} trailing spaces in ${totalFilesProcessed - ignoredFiles} files. ${ignoredFiles} files ignored.`;
                     vscode.window.setStatusBarMessage(message);
                     this.logger.info(message);
                 });
             } else {
-                let message: string = "No trailing spaces to delete in " + (totalFilesProcessed - ignoredFiles) + " files. " + ignoredFiles + " files ignored.";
+                let message: string = `No trailing spaces to delete in ${totalFilesProcessed - ignoredFiles} files. ${ignoredFiles} files ignored.`;
                 vscode.window.setStatusBarMessage(message);
                 this.logger.info(message);
             }
@@ -233,7 +233,7 @@ export class TrailingSpaces {
         let message: string;
         let edits: number = 0;
         if (this.ignoreFile(document.languageId)) {
-            message = "File with langauge '" + document.languageId + "' ignored";
+            message = `File with langauge '${document.languageId}' ignored`;
             edits = undefined;
         } else {
             let regions: vscode.Range[] = this.getRegionsToDelete(document, settings, currentLine);
@@ -242,7 +242,7 @@ export class TrailingSpaces {
                 for (let i: number = regions.length - 1; i >= 0; i--) {
                     workspaceEdit.delete(document.uri, regions[i]);
                 }
-                message = "Deleted " + regions.length + " trailing spaces region" + (regions.length > 1 ? "s" : "");
+                message = `Deleted ${regions.length} trailing spaces region ${(regions.length > 1 ? "s" : "")}`;
                 edits = regions.length;
             } else {
                 message = "No trailing spaces to delete!";
@@ -262,7 +262,7 @@ export class TrailingSpaces {
     private matchTrailingSpaces(editor: vscode.TextEditor): void {
         let regions: TrailingRegions = { offendingLines: [], highlightable: [] };
         if (this.ignoreFile(editor.document.languageId)) {
-            this.logger.info("File with langauge '" + editor.document.languageId + "' ignored - " + editor.document.fileName);
+            this.logger.info(`File with langauge '${editor.document.languageId}' ignored - ${editor.document.fileName}`);
         } else {
             regions = this.findTrailingSpaces(editor.document, this.settings, editor.document.lineAt(editor.selection.active));
         }
@@ -290,7 +290,7 @@ export class TrailingSpaces {
     private freezeLastVersion(document: vscode.TextDocument): void {
         if (document.isUntitled) return;
         this.onDisk[document.uri.toString()] = fs.readFileSync(document.uri.fsPath, "utf-8");
-        this.logger.log("File frozen - " + document.uri.fsPath);
+        this.logger.log(`File frozen - ${document.uri.fsPath}`);
     }
 
     /**
