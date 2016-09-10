@@ -164,7 +164,8 @@ export class TrailingSpaces {
 
     private deleteTrailingSpacesCore(document: vscode.TextDocument, selection: vscode.Selection, settings: TralingSpacesSettings): void {
         let workspaceEdit: vscode.WorkspaceEdit = new vscode.WorkspaceEdit();
-        this.deleteTrailingRegions(document, settings, document.lineAt(selection.end), workspaceEdit);
+        let end = document.validatePosition(selection.end);
+        this.deleteTrailingRegions(document, settings, document.lineAt(end), workspaceEdit);
         if (workspaceEdit.size > 0) {
             vscode.workspace.applyEdit(workspaceEdit).then(() => {
                 if (this.settings.saveAfterTrim && !this.settings.trimOnSave)
@@ -259,7 +260,8 @@ export class TrailingSpaces {
         if (this.ignoreFile(editor.document)) {
             this.logger.log("File with langauge '" + editor.document.languageId + "' ignored.");
         } else {
-            regions = this.findTrailingSpaces(editor.document, this.settings, editor.document.lineAt(editor.selection.end));
+            let posn = editor.document.validatePosition(editor.selection.end)
+            regions = this.findTrailingSpaces(editor.document, this.settings, editor.document.lineAt(posn));
         }
         this.addTrailingSpacesRegions(editor.document, regions);
         this.highlightTrailingSpacesRegions(editor, regions.highlightable);
