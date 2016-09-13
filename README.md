@@ -196,3 +196,7 @@ Trailing spaces are line-ending regions containing at least one simple space, ta
 // *danger* will match newline chars and many other folks
 "trailing-spaces.regexp": "[\\s]+"
 ```
+
+Contributions
+-------------
+- [@HookyQR](https://github.com/HookyQR): Fixed error while deleting last line of text [PR #9](https://github.com/shardulm94/vscode-trailingspaces/pull/9) 
