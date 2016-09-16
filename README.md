@@ -2,6 +2,7 @@ Trailing Spaces
 ===============
 
 [![Build Status](https://travis-ci.org/shardulm94/vscode-trailingspaces.svg?branch=master)](https://travis-ci.org/shardulm94/vscode-trailingspaces)
+[![VS Code Marketplace](http://vsmarketplacebadge.apphb.com/version-short/shardulm94.trailing-spaces.svg) ![Rating](http://vsmarketplacebadge.apphb.com/rating-short/shardulm94.trailing-spaces.svg) ![Installs](http://vsmarketplacebadge.apphb.com/installs/shardulm94.trailing-spaces.svg)](https://marketplace.visualstudio.com/items?itemName=shardulm94.trailing-spaces)
 
 A [VS Code](https://code.visualstudio.com/) extension that allows you to…
 
