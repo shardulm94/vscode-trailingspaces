@@ -39,6 +39,8 @@ describe("Extension Tests", () => {
     });
 
     describe("testForDeleteTrailingSpaces", () => {
+        this.timeout(5000);
+
         it("should delete all trailing spaces", (done: MochaDone) => {
             let settings: TralingSpacesSettings = Object.assign({}, defaultSettings);
             assertDeleteTrailingSpaces(testFileEditor, settings, './files/delete_all_trailing_spaces.js', done);
