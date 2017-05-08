@@ -7,7 +7,7 @@ import * as utils from './utils';
 import fs = require('fs');
 import path = require('path');
 import glob = require('glob');
-import {TextEditorEdit, WorkspaceEdit} from 'vscode';
+import { TextEditorEdit, WorkspaceEdit } from 'vscode';
 
 export interface TrailingRegions {
     offendingLines: vscode.Range[],
@@ -111,7 +111,7 @@ export class TrailingSpaces {
                 if (document.uri === editor.document.uri)
                     if (this.settings.trimOnSave) {
                         editor.edit((editBuilder: vscode.TextEditorEdit) => {
-                            this.delete(editor, editBuilder);
+                            this.delete(editor, editBuilder, true);
                         }).then(() => {
                             editor.document.save().then(() => {
                                 this.freezeLastVersion(editor.document);
@@ -138,8 +138,8 @@ export class TrailingSpaces {
         this.refreshLanguagesToIgnore();
     }
 
-    public delete(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit): void {
-        this.deleteCore(editor.document, editor.selection, this.settings);
+    public delete(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit, onSave: boolean = false): void {
+        this.deleteCore(editor.document, editor.selection, this.settings, onSave);
     }
 
     public deleteModifiedLinesOnly(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit): void {
@@ -160,10 +160,10 @@ export class TrailingSpaces {
         this.deleteInFolderCore(editor.document, true);
     }
 
-    private deleteCore(document: vscode.TextDocument, selection: vscode.Selection, settings: TralingSpacesSettings): void {
+    private deleteCore(document: vscode.TextDocument, selection: vscode.Selection, settings: TralingSpacesSettings, onSave: boolean = false): void {
         let workspaceEdit: vscode.WorkspaceEdit = new vscode.WorkspaceEdit();
         let end = document.validatePosition(selection.end);
-        this.deleteTrailingRegions(document, settings, document.lineAt(end), workspaceEdit);
+        this.deleteTrailingRegions(document, settings, document.lineAt(end), workspaceEdit, onSave);
         if (workspaceEdit.size > 0) {
             vscode.workspace.applyEdit(workspaceEdit).then(() => {
                 if (this.settings.saveAfterTrim && !this.settings.trimOnSave)
@@ -228,9 +228,10 @@ export class TrailingSpaces {
      * @param {TralingSpacesSettings} settings The settings to be used
      * @param {vscode.TextLine} currentLine The line on which the cursor currently is
      * @param {vscode.WorkspaceEdit} workspaceEdit The workspaceEdit instance to be used to apply edits
+     * @param {boolean} onSave Is the function trigerred by the trimOnSave option
      * @returns {number} The number of trailing space regions deleted. If the file was ignored, undefined will be returned
      */
-    private deleteTrailingRegions(document: vscode.TextDocument, settings: TralingSpacesSettings, currentLine: vscode.TextLine, workspaceEdit: vscode.WorkspaceEdit): number {
+    private deleteTrailingRegions(document: vscode.TextDocument, settings: TralingSpacesSettings, currentLine: vscode.TextLine, workspaceEdit: vscode.WorkspaceEdit, onSave: boolean = false): number {
         let message: string;
         let edits: number = 0;
         if (this.ignoreFile(document.languageId)) {
@@ -250,7 +251,9 @@ export class TrailingSpaces {
             }
         }
         this.logger.info(message + " - " + document.fileName);
-        vscode.window.setStatusBarMessage(message, 3000);
+        if (!onSave || edits > 0) {
+            vscode.window.setStatusBarMessage(message, 3000);
+        }
         return edits;
     }
 
