@@ -105,22 +105,21 @@ export class TrailingSpaces {
                 if (this.settings.liveMatching)
                     this.matchTrailingSpaces(vscode.window.activeTextEditor);
         });
+        vscode.workspace.onWillSaveTextDocument((event: vscode.TextDocumentWillSaveEvent) => {
+            if (event.reason == vscode.TextDocumentSaveReason.Manual) {
+                this.logger.log(`onWillSaveTextDocument event called - ${event.document.fileName}`);
+                vscode.window.visibleTextEditors.forEach((editor: vscode.TextEditor) => {
+                    if (event.document.uri === editor.document.uri) {
+                        if (this.settings.trimOnSave) {
+                            event.waitUntil(Promise.resolve(this.delete(editor, null, true)));
+                        }
+                    }
+                });
+            }
+        });
         vscode.workspace.onDidSaveTextDocument((document: vscode.TextDocument) => {
             this.logger.log(`onDidSaveTextDocument event called - ${document.fileName}`);
-            vscode.window.visibleTextEditors.forEach((editor: vscode.TextEditor) => {
-                if (document.uri === editor.document.uri)
-                    if (this.settings.trimOnSave) {
-                        editor.edit((editBuilder: vscode.TextEditorEdit) => {
-                            this.delete(editor, editBuilder, true);
-                        }).then(() => {
-                            editor.document.save().then(() => {
-                                this.freezeLastVersion(editor.document);
-                            });
-                        });
-                    } else {
-                        this.freezeLastVersion(editor.document);
-                    }
-            });
+            this.freezeLastVersion(document);
         });
         vscode.workspace.onDidCloseTextDocument((document: vscode.TextDocument) => {
             this.logger.log(`onDidCloseTextDocument event called - ${document.fileName}`);
@@ -138,8 +137,8 @@ export class TrailingSpaces {
         this.refreshLanguagesToIgnore();
     }
 
-    public delete(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit, onSave: boolean = false): void {
-        this.deleteCore(editor.document, editor.selection, this.settings, onSave);
+    public delete(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit, onSave: boolean = false): vscode.TextEdit[] {
+        return this.deleteCore(editor.document, editor.selection, this.settings, onSave);
     }
 
     public deleteModifiedLinesOnly(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit): void {
@@ -160,16 +159,17 @@ export class TrailingSpaces {
         this.deleteInFolderCore(editor.document, true);
     }
 
-    private deleteCore(document: vscode.TextDocument, selection: vscode.Selection, settings: TralingSpacesSettings, onSave: boolean = false): void {
+    private deleteCore(document: vscode.TextDocument, selection: vscode.Selection, settings: TralingSpacesSettings, onSave: boolean = false): vscode.TextEdit[] {
         let workspaceEdit: vscode.WorkspaceEdit = new vscode.WorkspaceEdit();
         let end = document.validatePosition(selection.end);
         this.deleteTrailingRegions(document, settings, document.lineAt(end), workspaceEdit, onSave);
-        if (workspaceEdit.size > 0) {
+        if (workspaceEdit.size > 0 && !onSave) {
             vscode.workspace.applyEdit(workspaceEdit).then(() => {
                 if (this.settings.saveAfterTrim && !this.settings.trimOnSave)
                     document.save();
             });
         }
+        return workspaceEdit.get(document.uri);
     }
 
     private deleteInFolderCore(document: vscode.TextDocument, recursive: boolean = false): void {
@@ -244,7 +244,7 @@ export class TrailingSpaces {
                 for (let i: number = regions.length - 1; i >= 0; i--) {
                     workspaceEdit.delete(document.uri, regions[i]);
                 }
-                message = `Deleted ${regions.length} trailing spaces region ${(regions.length > 1 ? "s" : "")}`;
+                message = `Deleted ${regions.length} trailing spaces region${(regions.length > 1 ? "s" : "")}`;
                 edits = regions.length;
             } else {
                 message = "No trailing spaces to delete!";
