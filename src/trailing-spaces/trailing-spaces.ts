@@ -111,7 +111,7 @@ export class TrailingSpaces {
                 vscode.window.visibleTextEditors.forEach((editor: vscode.TextEditor) => {
                     if (event.document.uri === editor.document.uri) {
                         if (this.settings.trimOnSave) {
-                            event.waitUntil(Promise.resolve(this.delete(editor, null, true)));
+                            event.waitUntil(Promise.resolve(this.deleteCore(editor.document, editor.selection, this.settings, true)));
                         }
                     }
                 });
@@ -137,8 +137,8 @@ export class TrailingSpaces {
         this.refreshLanguagesToIgnore();
     }
 
-    public delete(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit, onSave: boolean = false): vscode.TextEdit[] {
-        return this.deleteCore(editor.document, editor.selection, this.settings, onSave);
+    public delete(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit): vscode.TextEdit[] {
+        return this.deleteCore(editor.document, editor.selection, this.settings, false);
     }
 
     public deleteModifiedLinesOnly(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit): void {
@@ -162,12 +162,24 @@ export class TrailingSpaces {
     private deleteCore(document: vscode.TextDocument, selection: vscode.Selection, settings: TralingSpacesSettings, onSave: boolean = false): vscode.TextEdit[] {
         let workspaceEdit: vscode.WorkspaceEdit = new vscode.WorkspaceEdit();
         let end = document.validatePosition(selection.end);
-        this.deleteTrailingRegions(document, settings, document.lineAt(end), workspaceEdit, onSave);
+        let edits = this.deleteTrailingRegions(document, settings, document.lineAt(end), workspaceEdit);
         if (workspaceEdit.size > 0 && !onSave) {
             vscode.workspace.applyEdit(workspaceEdit).then(() => {
                 if (this.settings.saveAfterTrim && !this.settings.trimOnSave)
                     document.save();
             });
+        }
+        let message: string;
+        if (edits === undefined) {
+            message = `File with langauge '${document.languageId}' ignored`;
+        } else if (edits > 0) {
+            message = `Deleted ${edits} trailing space region${(edits > 1 ? "s" : "")}`;
+        } else {
+            message = "No trailing spaces to delete!";
+        }
+        this.logger.info(message + " - " + document.fileName);
+        if (!onSave || edits > 0) {
+            vscode.window.setStatusBarMessage(message, 3000);
         }
         return workspaceEdit.get(document.uri);
     }
@@ -228,31 +240,19 @@ export class TrailingSpaces {
      * @param {TralingSpacesSettings} settings The settings to be used
      * @param {vscode.TextLine} currentLine The line on which the cursor currently is
      * @param {vscode.WorkspaceEdit} workspaceEdit The workspaceEdit instance to be used to apply edits
-     * @param {boolean} onSave Is the function trigerred by the trimOnSave option
      * @returns {number} The number of trailing space regions deleted. If the file was ignored, undefined will be returned
      */
-    private deleteTrailingRegions(document: vscode.TextDocument, settings: TralingSpacesSettings, currentLine: vscode.TextLine, workspaceEdit: vscode.WorkspaceEdit, onSave: boolean = false): number {
-        let message: string;
+    private deleteTrailingRegions(document: vscode.TextDocument, settings: TralingSpacesSettings, currentLine: vscode.TextLine, workspaceEdit: vscode.WorkspaceEdit): number {
         let edits: number = 0;
         if (this.ignoreFile(document.languageId)) {
-            message = `File with langauge '${document.languageId}' ignored`;
             edits = undefined;
         } else {
             let regions: vscode.Range[] = this.getRegionsToDelete(document, settings, currentLine);
-            if (regions.length > 0) {
-                // Delete from the bottom to the top
-                for (let i: number = regions.length - 1; i >= 0; i--) {
-                    workspaceEdit.delete(document.uri, regions[i]);
-                }
-                message = `Deleted ${regions.length} trailing spaces region${(regions.length > 1 ? "s" : "")}`;
-                edits = regions.length;
-            } else {
-                message = "No trailing spaces to delete!";
+            // Delete from the bottom to the top
+            for (let i: number = regions.length - 1; i >= 0; i--) {
+                workspaceEdit.delete(document.uri, regions[i]);
             }
-        }
-        this.logger.info(message + " - " + document.fileName);
-        if (!onSave || edits > 0) {
-            vscode.window.setStatusBarMessage(message, 3000);
+            edits = regions.length;
         }
         return edits;
     }
@@ -327,7 +327,7 @@ export class TrailingSpaces {
     }
 
     /**
-     * Finds all ranges in the document which contain trailing spaces based.
+     * Finds all ranges in the document which contain trailing spaces based on the settings.
      *
      * @private
      * @param {vscode.TextDocument} document The document in which the trailing spaces should be found
