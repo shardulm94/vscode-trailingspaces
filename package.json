@@ -6,7 +6,7 @@
   "publisher": "shardulm94",
   "icon": "icon.png",
   "engines": {
-    "vscode": "^0.10.1"
+    "vscode": "^1.0.0"
   },
   "categories": [
     "Other"
@@ -98,21 +98,25 @@
     "*"
   ],
   "scripts": {
-    "vscode:prepublish": "node ./node_modules/vscode/bin/compile",
-    "compile": "node ./node_modules/vscode/bin/compile -watch -p ./",
-    "test": "node ./node_modules/vscode/bin/test",
+    "vscode:prepublish": "tsc -p ./",
+    "compile": "tsc -watch -p ./",
+    "postinstall": "node ./node_modules/vscode/bin/install",
     "pretest": "ncp test/files out/test/files",
-    "postinstall": "node ./node_modules/vscode/bin/install"
+    "test": "node ./node_modules/vscode/bin/test"
   },
   "devDependencies": {
-    "ncp": "^2.0.0",
-    "typescript": "^1.6.2",
-    "vscode": "^0.11.x"
+    "typescript": "^2.0.3",
+    "vscode": "^1.0.0",
+    "mocha": "^2.3.3",
+    "@types/node": "^6.0.40",
+    "@types/mocha": "^2.2.32",
+    "ncp": "^2.0.0"
   },
   "directories": {
     "test": "test"
   },
   "dependencies": {
+    "@types/diff": "^3.0.0",
     "diff": "^3.0.0",
     "glob": "^7.0.3"
   },

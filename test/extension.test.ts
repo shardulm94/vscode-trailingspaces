@@ -1,4 +1,4 @@
-// 
+//
 // Note: This example test is leveraging the Mocha test framework.
 // Please refer to their documentation on https://mochajs.org/ for help.
 //
@@ -91,8 +91,11 @@ describe("Extension Tests", () => {
 
     afterEach((done: MochaDone) => {
         console.log("Reverting changes");
-        vscode.commands.executeCommand("workbench.action.files.revert");
-        setTimeout(done, 200);
+        vscode.commands.executeCommand("workbench.action.files.revert").then((value: {}) => {
+            setTimeout(function() {
+                done();
+            },400);
+        });
     });
 
 });
@@ -100,10 +103,9 @@ describe("Extension Tests", () => {
 let assertDeleteTrailingSpaces = (editor: vscode.TextEditor, settings: TralingSpacesSettings, expectedOutputFile: string, done: MochaDone): void => {
     let outputFile: string = fs.readFileSync(path.join(__dirname, expectedOutputFile), "utf-8");
     vscode.commands.executeCommand("trailing-spaces.loadConfig", JSON.stringify(settings)).then(() => {
-        vscode.commands.executeCommand("trailing-spaces.deleteTrailingSpaces");
-        setTimeout(() => {
+        vscode.commands.executeCommand("trailing-spaces.deleteTrailingSpaces").then(() => {
             assert.equal(editor.document.getText(), outputFile);
             done();
-        }, 200);
+        });
     });
 };
