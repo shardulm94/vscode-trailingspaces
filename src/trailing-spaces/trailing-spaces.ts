@@ -21,6 +21,7 @@ export interface TralingSpacesSettings {
     liveMatching: boolean,
     deleteModifiedLinesOnly: boolean,
     syntaxIgnore: string[],
+    regexpIgnore: string[],
     trimOnSave: boolean,
     saveAfterTrim: boolean
 }
@@ -64,6 +65,7 @@ export class TrailingSpaces {
                 liveMatching: this.config.get<boolean>("liveMatching"),
                 deleteModifiedLinesOnly: this.config.get<boolean>("deleteModifiedLinesOnly"),
                 syntaxIgnore: this.config.get<string[]>("syntaxIgnore"),
+                regexpIgnore: this.config.get<string[]>("regexpIgnore"),
                 trimOnSave: this.config.get<boolean>("trimOnSave"),
                 saveAfterTrim: this.config.get<boolean>("saveAfterTrim")
             }
@@ -336,13 +338,23 @@ export class TrailingSpaces {
         let regexp: string = "(" + settings.regexp + ")$";
         let noEmptyLinesRegexp = "\\S" + regexp;
 
+        // Compile the regular expressions
+        let regexpIgnore = settings.regexpIgnore.map(str => new RegExp(str));
+
         let offendingRanges: vscode.Range[] = [];
         let offendingRangesRegexp: RegExp = new RegExp(settings.includeEmptyLines ? regexp : noEmptyLinesRegexp, "gm");
         let documentText: string = document.getText();
 
         let match: RegExpExecArray;
         while (match = offendingRangesRegexp.exec(documentText)) {
-            let matchRange: vscode.Range = new vscode.Range(document.positionAt(match.index + match[0].length - match[1].length), document.positionAt(match.index + match[0].length));
+            let start = document.positionAt(match.index + match[0].length - match[1].length);
+            let line = document.lineAt(start);
+            console.log(line);
+            if (line && !line.isEmptyOrWhitespace && regexpIgnore.some(regex => regex.test(line.text))) {
+                continue;
+            }
+            let end = document.positionAt(match.index + match[0].length);
+            let matchRange: vscode.Range = new vscode.Range(start, end);
             if (!matchRange.isEmpty)
                 offendingRanges.push(matchRange);
         }

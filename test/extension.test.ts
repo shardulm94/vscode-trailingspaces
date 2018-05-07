@@ -24,6 +24,7 @@ describe("Extension Tests", () => {
         liveMatching: true,
         deleteModifiedLinesOnly: false,
         syntaxIgnore: [],
+        regexpIgnore: [],
         trimOnSave: false,
         saveAfterTrim: false
     }
