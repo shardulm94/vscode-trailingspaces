@@ -349,7 +349,6 @@ export class TrailingSpaces {
         while (match = offendingRangesRegexp.exec(documentText)) {
             let start = document.positionAt(match.index + match[0].length - match[1].length);
             let line = document.lineAt(start);
-            console.log(line);
             if (line && !line.isEmptyOrWhitespace && regexpIgnore.some(regex => regex.test(line.text))) {
                 continue;
             }
