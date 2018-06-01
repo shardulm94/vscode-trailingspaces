@@ -68,6 +68,16 @@
           "type": "boolean",
           "default": false,
           "description": "By default, deleting trailing spaces does not cause the document to be saved. Set to true to force saving after trailing spaces have been deleted. This setting is irrelevant and will be ignored if trimOnSave is true."
+        },
+        "trailing-spaces.backgroundColor": {
+          "type": "string",
+          "default": "rgba(255,0,0,0.3)",
+          "description": "By default, rgba(255,0,0,0.3)."
+        },
+        "trailing-spaces.borderColor": {
+          "type": "string",
+          "default": "rgba(255,100,100,0.15)",
+          "description": "By default, rgba(255,100,100,0.15)."
         }
       }
     },

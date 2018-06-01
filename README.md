@@ -185,6 +185,26 @@ bat, c, clojure, coffeescript, cpp, css, dockerfile, fsharp, go, groovy, handleb
 
 For the most recent list of langauges, please use the `languages.getLanguages()` function (details [here](https://code.visualstudio.com/docs/extensionAPI/vscode-api#languages.getLanguages)).
 
+### Background Color
+
+*Default: rgba(255,0,0,0.3)*
+
+Trailing spaces highlighting has a background color. To set up another color change the setting:
+
+``` js
+{ "trailing-spaces.backgroundColor": "rgba(255,0,0,0.3)" }
+```
+
+### Border Color
+
+*Default: rgba(255,100,100,0.15)*
+
+Trailing spaces highlighting has a border color. To set up another color change the setting:
+
+``` js
+{ "trailing-spaces.backgroundColor": "rgba(255,100,100,0.15)" }
+```
+
 ### For power-users only!
 
 #### The matching pattern

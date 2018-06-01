@@ -22,20 +22,16 @@ export interface TralingSpacesSettings {
     deleteModifiedLinesOnly: boolean,
     syntaxIgnore: string[],
     trimOnSave: boolean,
-    saveAfterTrim: boolean
+    saveAfterTrim: boolean,
+    backgroundColor: string,
+    borderColor: string
 }
 
 export class TrailingSpaces {
 
     private logger: ILogger;
     private config: Config;
-    private decorationOptions: vscode.DecorationRenderOptions = {
-        borderRadius: "3px",
-        borderWidth: "1px",
-        borderStyle: "solid",
-        backgroundColor: "rgba(255,0,0,0.3)",
-        borderColor: "rgba(255,100,100,0.15)"
-    };
+    private decorationOptions: vscode.DecorationRenderOptions;
     private decorationType: vscode.TextEditorDecorationType;
     private matchedRegions: { [id: string]: TrailingRegions; };
     private onDisk: { [id: string]: string; };
@@ -65,10 +61,23 @@ export class TrailingSpaces {
                 deleteModifiedLinesOnly: this.config.get<boolean>("deleteModifiedLinesOnly"),
                 syntaxIgnore: this.config.get<string[]>("syntaxIgnore"),
                 trimOnSave: this.config.get<boolean>("trimOnSave"),
-                saveAfterTrim: this.config.get<boolean>("saveAfterTrim")
+                saveAfterTrim: this.config.get<boolean>("saveAfterTrim"),
+                backgroundColor: this.config.get<string>("backgroundColor"),
+                borderColor: this.config.get<string>("borderColor")
             }
+        this.decorationOptions = this.getDecorationOptions();
         this.matchedRegions = {};
         this.refreshLanguagesToIgnore();
+    }
+
+    private getDecorationOptions() {
+        return {
+            borderRadius: "3px",
+            borderWidth: "1px",
+            borderStyle: "solid",
+            backgroundColor: this.settings.backgroundColor,
+            borderColor: this.settings.borderColor
+        }
     }
 
     private refreshLanguagesToIgnore() {
