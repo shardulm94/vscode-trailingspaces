@@ -26,6 +26,8 @@ This extension is a port of the popular [Sublime Text](https://www.sublimetext.c
 	- [Save After Trim](#save-after-trim)
 	- [Live Matching vs On-demand Matching](#live-matching-vs-on-demand-matching)
 	- [Ignore Syntax](#ignore-syntax)
+	- [Background Color](#background-color)
+	- [Border Color](#border-color)
 	- [For power-users only!](#for-power-users-only)
 		- [The matching pattern](#the-matching-pattern)
 
