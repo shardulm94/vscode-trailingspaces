@@ -42,6 +42,7 @@ export class TrailingSpaces {
     private languagesToIgnore: { [id: string]: boolean; };
     private settings: TralingSpacesSettings;
     private highlightSettings: TralingSpacesSettings;
+    private pendingSave: Set<vscode.Uri>;
 
     constructor() {
         this.logger = Logger.getInstance();
@@ -51,13 +52,14 @@ export class TrailingSpaces {
         this.onDisk = {};
         this.loadConfig();
         this.decorationType = vscode.window.createTextEditorDecorationType(this.decorationOptions);
+        this.pendingSave = new Set(); // list of file uri's currently being saved
     }
 
     public loadConfig(settings?: string): void {
         if (settings)
             this.settings = JSON.parse(settings);
         else
-            this.settings = {
+              this.settings = {
                 includeEmptyLines: this.config.get<boolean>("includeEmptyLines"),
                 highlightCurrentLine: this.config.get<boolean>("highlightCurrentLine"),
                 regexp: this.config.get<string>("regexp"),
@@ -109,15 +111,27 @@ export class TrailingSpaces {
         });
         vscode.workspace.onDidSaveTextDocument((document: vscode.TextDocument) => {
             this.logger.log("onDidSaveTextDocument event called - " + document.fileName);
+            if(this.pendingSave.has(document.uri)) {
+                // this event is from our action of saving the file, ignore it
+                this.logger.log("file is pending to be saved; ignoring");
+                return;
+            }
+
             vscode.window.visibleTextEditors.forEach((editor: vscode.TextEditor) => {
                 if (document.uri === editor.document.uri)
                     if (this.settings.trimOnSave) {
                         editor.edit((editBuilder: vscode.TextEditorEdit) => {
                             this.deleteTrailingSpaces(editor, editBuilder);
                         }).then(() => {
-                            editor.document.save().then(() => {
-                                this.freezeLastVersion(editor.document);
-                            });
+                            if(editor.document.isDirty) {
+                                this.pendingSave.add(editor.document.uri);
+                                editor.document.save().then(() => {
+                                    this.freezeLastVersion(editor.document);
+                                    this.pendingSave.delete(editor.document.uri);
+                                });
+                            } else {
+                                this.logger.log('Document is not dirty, not triggering a save');
+                            }
                         });
                     } else {
                         this.freezeLastVersion(editor.document);
@@ -141,13 +155,13 @@ export class TrailingSpaces {
     }
 
     public deleteTrailingSpaces(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit): void {
-        this.deleteTrailingSpacesCore(editor.document, editor.selection, this.settings);
+        this.deleteTrailingSpacesCore(editor.document, editor.selection, this.settings, editorEdit);
     }
 
     public deleteTrailingSpacesModifiedLinesOnly(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit): void {
         let modifiedLinesSettings: TralingSpacesSettings = Object.assign({}, this.settings);
         modifiedLinesSettings.deleteModifiedLinesOnly = true;
-        this.deleteTrailingSpacesCore(editor.document, editor.selection, modifiedLinesSettings);
+        this.deleteTrailingSpacesCore(editor.document, editor.selection, modifiedLinesSettings, editorEdit);
     }
 
     public highlightTrailingSpaces(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit): void {
@@ -162,16 +176,10 @@ export class TrailingSpaces {
         this.deleteInFolderCore(editor.document, true);
     }
 
-    private deleteTrailingSpacesCore(document: vscode.TextDocument, selection: vscode.Selection, settings: TralingSpacesSettings): void {
-        let workspaceEdit: vscode.WorkspaceEdit = new vscode.WorkspaceEdit();
+    private deleteTrailingSpacesCore(document: vscode.TextDocument, selection: vscode.Selection, settings: TralingSpacesSettings, editorEdit: vscode.TextEditorEdit): void {
+        // let workspaceEdit: vscode.WorkspaceEdit = new vscode.WorkspaceEdit();
         let end = document.validatePosition(selection.end);
-        this.deleteTrailingRegions(document, settings, document.lineAt(end), workspaceEdit);
-        if (workspaceEdit.size > 0) {
-            vscode.workspace.applyEdit(workspaceEdit).then(() => {
-                if (this.settings.saveAfterTrim && !this.settings.trimOnSave)
-                    document.save();
-            });
-        }
+        this.deleteTrailingRegions(document, settings, document.lineAt(end), editorEdit);
     }
 
     private deleteInFolderCore(document: vscode.TextDocument, recursive: boolean = false): void {
@@ -227,7 +235,7 @@ export class TrailingSpaces {
         });
     }
 
-    private deleteTrailingRegions(document: vscode.TextDocument, settings: TralingSpacesSettings, currentLine: vscode.TextLine, workspaceEdit: vscode.WorkspaceEdit): number {
+    private deleteTrailingRegions(document: vscode.TextDocument, settings: TralingSpacesSettings, currentLine: vscode.TextLine, workspaceEdit: vscode.WorkspaceEdit | vscode.TextEditorEdit): number {
         let message: string;
         let edits: number = 0;
         if (this.ignoreFile(document)) {
@@ -239,7 +247,13 @@ export class TrailingSpaces {
             if (regions) {
                 regions.reverse();
                 regions.forEach((region: vscode.Range) => {
-                    workspaceEdit.delete(document.uri, region);
+                    if(workspaceEdit instanceof vscode.WorkspaceEdit) {
+                        // vscode.WorkspaceEdit - we are triming outside of a editor hook
+                        workspaceEdit.delete(document.uri, region);
+                    } else {
+                        // vscode.TextEditorEdit - we are triming inside of an editor hook
+                        workspaceEdit.delete(region);
+                    }
                 });
             }
 
