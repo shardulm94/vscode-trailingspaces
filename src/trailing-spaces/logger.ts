@@ -22,8 +22,8 @@ export interface ILogger {
 export class Logger implements ILogger {
 
     private static instance: Logger = new Logger();
-    private level: LogLevel;
-    private prefix: string;
+    private level!: LogLevel;
+    private prefix!: string;
 
     public constructor(prefix?: string, level?: LogLevel) {
         if (!Logger.instance) {

@@ -26,7 +26,7 @@
             "warn",
             "error"
           ],
-          "default": "error",
+          "default": "warn",
           "description": "Controls the verbosity of logging. Logs can be seen in the console by opening the dev tools. `log` is the most verbose and `error` will only show critical errors."
         },
         "trailing-spaces.includeEmptyLines": {
@@ -63,11 +63,6 @@
           "type": "boolean",
           "default": false,
           "description": "By default, nothing happens on save. Set to true to trim trailing spaces before saving, with respect to the other settings."
-        },
-        "trailing-spaces.saveAfterTrim": {
-          "type": "boolean",
-          "default": false,
-          "description": "By default, deleting trailing spaces does not cause the document to be saved. Set to true to force saving after trailing spaces have been deleted. This setting is irrelevant and will be ignored if trimOnSave is true."
         }
       }
     },
@@ -93,8 +88,6 @@
     "onCommand:trailing-spaces.deleteTrailingSpaces",
     "onCommand:trailing-spaces.deleteTrailingSpacesModifiedLinesOnly",
     "onCommand:trailing-spaces.highlightTrailingSpaces",
-    "onCommand:trailing-spaces.deleteInFolder",
-    "onCommand:trailing-spaces.deleteInFolderRecursive",
     "*"
   ],
   "scripts": {
@@ -105,20 +98,19 @@
     "test": "node ./node_modules/vscode/bin/test"
   },
   "devDependencies": {
-    "typescript": "^2.0.3",
+    "typescript": "^3.3.0",
     "vscode": "^1.0.0",
-    "mocha": "^2.3.3",
+    "mocha": "^5.0.0",
     "@types/node": "^6.0.40",
-    "@types/mocha": "^2.2.32",
+    "@types/mocha": "^5.0.0",
     "ncp": "^2.0.0"
   },
   "directories": {
     "test": "test"
   },
   "dependencies": {
-    "@types/diff": "^3.0.0",
-    "diff": "^3.0.0",
-    "glob": "^7.0.3"
+    "@types/diff": "^4.0.0",
+    "diff": "^4.0.0"
   },
   "repository": {
     "type": "git",

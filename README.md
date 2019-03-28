@@ -2,7 +2,7 @@ Trailing Spaces
 ===============
 
 [![Build Status](https://travis-ci.org/shardulm94/vscode-trailingspaces.svg?branch=master)](https://travis-ci.org/shardulm94/vscode-trailingspaces)
-[![VS Code Marketplace](http://vsmarketplacebadge.apphb.com/version-short/shardulm94.trailing-spaces.svg) ![Rating](http://vsmarketplacebadge.apphb.com/rating-short/shardulm94.trailing-spaces.svg) ![Installs](http://vsmarketplacebadge.apphb.com/installs/shardulm94.trailing-spaces.svg)](https://marketplace.visualstudio.com/items?itemName=shardulm94.trailing-spaces)
+[![VS Code Marketplace](https://vsmarketplacebadge.apphb.com/version-short/shardulm94.trailing-spaces.svg) ![Rating](https://vsmarketplacebadge.apphb.com/rating-short/shardulm94.trailing-spaces.svg) ![Installs](https://vsmarketplacebadge.apphb.com/installs/shardulm94.trailing-spaces.svg)](https://marketplace.visualstudio.com/items?itemName=shardulm94.trailing-spaces)
 
 A [VS Code](https://code.visualstudio.com/) extension that allows you to…
 
@@ -140,7 +140,9 @@ Setting this to `true` will ensure trailing spaces are deleted when you save you
 { "trailing-spaces.trimOnSave": true }
 ```
 
-### Save After Trim
+### Save After Trim **[REMOVED]**
+
+*NOTE: Current VSCode lifecycle for a text editor commands do not provide a clean way to implement this feature. Since I did not see a lot of folks using this option, it was better to remove it.*
 
 *Default: false*
 

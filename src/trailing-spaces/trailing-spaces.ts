@@ -1,33 +1,15 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { LogLevel, ILogger, Logger } from './logger';
-import { Config } from './config';
+import { ILogger, Logger } from './logger';
+import { Settings, TrailingSpacesSettings } from './settings';
 import * as utils from './utils';
 import fs = require('fs');
-import path = require('path');
-import glob = require('glob');
-import { TextEditorEdit, WorkspaceEdit } from 'vscode';
 
-export interface TrailingRegions {
-    offendingLines: vscode.Range[],
-    highlightable: vscode.Range[]
-}
-
-export interface TralingSpacesSettings {
-    includeEmptyLines: boolean,
-    highlightCurrentLine: boolean,
-    regexp: string,
-    liveMatching: boolean,
-    deleteModifiedLinesOnly: boolean,
-    syntaxIgnore: string[],
-    trimOnSave: boolean,
-    saveAfterTrim: boolean
-}
 
 export class TrailingSpaces {
     private logger: ILogger;
-    private config: Config;
+    private settings: TrailingSpacesSettings;
     private decorationOptions: vscode.DecorationRenderOptions = {
         borderRadius: "3px",
         borderWidth: "1px",
@@ -36,243 +18,164 @@ export class TrailingSpaces {
         borderColor: "rgba(255,100,100,0.15)"
     };
     private decorationType: vscode.TextEditorDecorationType;
-    private matchedRegions: { [id: string]: TrailingRegions; };
-    private onDisk: { [id: string]: string; };
-    private languagesToIgnore: { [id: string]: boolean; };
-    private settings: TralingSpacesSettings;
-    private highlightSettings: TralingSpacesSettings;
 
     constructor() {
         this.logger = Logger.getInstance();
-        this.config = Config.getInstance();
-        this.languagesToIgnore = {};
-        this.matchedRegions = {};
-        this.onDisk = {};
-        this.loadConfig();
+        this.settings = Settings.getInstance();
         this.decorationType = vscode.window.createTextEditorDecorationType(this.decorationOptions);
     }
 
-    public loadConfig(settings?: string): void {
-        if (settings)
-            this.settings = JSON.parse(settings);
-        else
-            this.settings = {
-                includeEmptyLines: this.config.get<boolean>("includeEmptyLines"),
-                highlightCurrentLine: this.config.get<boolean>("highlightCurrentLine"),
-                regexp: this.config.get<string>("regexp"),
-                liveMatching: this.config.get<boolean>("liveMatching"),
-                deleteModifiedLinesOnly: this.config.get<boolean>("deleteModifiedLinesOnly"),
-                syntaxIgnore: this.config.get<string[]>("syntaxIgnore"),
-                trimOnSave: this.config.get<boolean>("trimOnSave"),
-                saveAfterTrim: this.config.get<boolean>("saveAfterTrim")
-            }
-        this.matchedRegions = {};
-        this.refreshLanguagesToIgnore();
+    public highlight(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit | undefined = undefined): void {
+        this.highlightTrailingSpaces(editor);
     }
 
-    private refreshLanguagesToIgnore() {
-        this.languagesToIgnore = {};
-        this.settings.syntaxIgnore.map((language: string) => {
-            this.languagesToIgnore[language] = true;
-        });
-    }
-
-    public addListeners(): void {
-        vscode.window.onDidChangeActiveTextEditor((editor: vscode.TextEditor) => {
-            if (!editor) return;
-            this.logger.log(`onDidChangeActiveTextEditor event called - ${editor.document.fileName}`);
-            this.freezeLastVersion(editor.document);
-            if (this.settings.liveMatching)
-                return this.matchTrailingSpaces(editor);
-            return;
-        });
-        vscode.window.onDidChangeTextEditorSelection((e: vscode.TextEditorSelectionChangeEvent) => {
-            let editor = e.textEditor;
-            this.logger.log(`onDidChangeTextEditorSelection event called - ${editor.document.fileName}`);
-            if (this.settings.liveMatching)
-                this.matchTrailingSpaces(editor);
-            return;
-        });
-        vscode.workspace.onDidChangeTextDocument((e: vscode.TextDocumentChangeEvent) => {
-            this.logger.log(`onDidChangeTextDocument event called - ${e.document.fileName}`);
-            if (vscode.window.activeTextEditor && vscode.window.activeTextEditor.document == e.document)
-                if (this.settings.liveMatching)
-                    this.matchTrailingSpaces(vscode.window.activeTextEditor);
-        });
-        vscode.workspace.onDidOpenTextDocument((document: vscode.TextDocument) => {
-            this.logger.log(`onDidOpenTextDocument event called - ${document.fileName}`);
-            if (vscode.window.activeTextEditor && vscode.window.activeTextEditor.document == document)
-                if (this.settings.liveMatching)
-                    this.matchTrailingSpaces(vscode.window.activeTextEditor);
-        });
-        vscode.workspace.onWillSaveTextDocument((event: vscode.TextDocumentWillSaveEvent) => {
-            if (event.reason == vscode.TextDocumentSaveReason.Manual) {
-                this.logger.log(`onWillSaveTextDocument event called - ${event.document.fileName}`);
-                vscode.window.visibleTextEditors.forEach((editor: vscode.TextEditor) => {
-                    if (event.document.uri === editor.document.uri) {
-                        if (this.settings.trimOnSave) {
-                            event.waitUntil(Promise.resolve(this.deleteCore(editor.document, editor.selection, this.settings, true)));
-                        }
-                    }
-                });
-            }
-        });
-        vscode.workspace.onDidSaveTextDocument((document: vscode.TextDocument) => {
-            this.logger.log(`onDidSaveTextDocument event called - ${document.fileName}`);
-            this.freezeLastVersion(document);
-        });
-        vscode.workspace.onDidCloseTextDocument((document: vscode.TextDocument) => {
-            this.logger.log(`onDidCloseTextDocument event called - ${document.fileName}`);
-            this.onDisk[document.uri.toString()] = null;
-        });
-    }
-
-    public initialize(): void {
-        if (this.settings.liveMatching) {
-            vscode.window.visibleTextEditors.forEach((editor: vscode.TextEditor) => {
-                this.matchTrailingSpaces(editor);
-            });
-            this.logger.info("All visible text editors highlighted");
-        }
-        this.refreshLanguagesToIgnore();
-    }
-
-    public delete(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit): vscode.TextEdit[] {
-        return this.deleteCore(editor.document, editor.selection, this.settings, false);
+    public delete(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit): void {
+        this.deleteTrailingSpaces(editor, editorEdit)
     }
 
     public deleteModifiedLinesOnly(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit): void {
-        let modifiedLinesSettings: TralingSpacesSettings = Object.assign({}, this.settings);
-        modifiedLinesSettings.deleteModifiedLinesOnly = true;
-        this.deleteCore(editor.document, editor.selection, modifiedLinesSettings);
-    }
-
-    public highlight(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit): void {
-        this.matchTrailingSpaces(editor);
-    }
-
-    public deleteInFolder(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit): void {
-        this.deleteInFolderCore(editor.document, false);
-    }
-
-    public deleteInFolderRecursive(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit): void {
-        this.deleteInFolderCore(editor.document, true);
-    }
-
-    private deleteCore(document: vscode.TextDocument, selection: vscode.Selection, settings: TralingSpacesSettings, onSave: boolean = false): vscode.TextEdit[] {
-        let workspaceEdit: vscode.WorkspaceEdit = new vscode.WorkspaceEdit();
-        let end = document.validatePosition(selection.end);
-        let edits = this.deleteTrailingRegions(document, settings, document.lineAt(end), workspaceEdit);
-        if (workspaceEdit.size > 0 && !onSave) {
-            vscode.workspace.applyEdit(workspaceEdit).then(() => {
-                if (this.settings.saveAfterTrim && !this.settings.trimOnSave)
-                    document.save();
-            });
-        }
-        let message: string;
-        if (edits === undefined) {
-            message = `File with langauge '${document.languageId}' ignored`;
-        } else if (edits > 0) {
-            message = `Deleted ${edits} trailing space region${(edits > 1 ? "s" : "")}`;
-        } else {
-            message = "No trailing spaces to delete!";
-        }
-        this.logger.info(message + " - " + document.fileName);
-        if (!onSave || edits > 0) {
-            vscode.window.setStatusBarMessage(message, 3000);
-        }
-        return workspaceEdit.get(document.uri);
-    }
-
-    private deleteInFolderCore(document: vscode.TextDocument, recursive: boolean = false): void {
-        let folderPath: string = path.dirname(document.uri.fsPath);
-        this.logger.info(`Deleting trailing spaces in folder (${recursive ? "" : "non-"}recursive) - ${folderPath}`);
-        let workspaceEdit: vscode.WorkspaceEdit = new vscode.WorkspaceEdit();
-        let totalFilesProcessed: number = 0;
-        let totalEdits: number = 0;
-        let ignoredFiles: number = 0;
-
-        let globsToIgnore: string[] = [];
-        globsToIgnore = globsToIgnore.concat(utils.getTrueKeys(vscode.workspace.getConfiguration('search').get<any>('exclude')));
-        globsToIgnore = globsToIgnore.map((g: string) => { return "**/" + g + "/**" });
-        globsToIgnore = globsToIgnore.concat(utils.getTrueKeys(vscode.workspace.getConfiguration('files').get<any>('exclude')));
-
-        let filePaths: string[] = glob.sync(folderPath + (recursive ? "/**" : "") + "/*.*", { nodir: true, ignore: globsToIgnore });
-        let promises: PromiseLike<void>[] = [];
-        filePaths.forEach((filePath: string) => {
-            let promise: PromiseLike<void> = vscode.workspace.openTextDocument(vscode.Uri.file(filePath)).then((document: vscode.TextDocument) => {
-                totalFilesProcessed++;
-                if (!document) return;
-                let edits: number = 0;
-                edits = this.deleteTrailingRegions(document, this.settings, null, workspaceEdit);
-                if (edits !== undefined) totalEdits += edits;
-                else ignoredFiles++;
-                let message: string = `Processing: ${totalFilesProcessed}/${filePaths.length} - ${filePath}`;
-                vscode.window.setStatusBarMessage(message);
-                this.logger.info(message);
-            }, (reason: any) => {
-                this.logger.error(reason);
-            });
-            promises.push(promise);
-        }, this);
-        Promise.all(promises).then(() => {
-            if (workspaceEdit.size > 0) {
-                vscode.workspace.applyEdit(workspaceEdit).then(() => {
-                    let message: string = `Deleted ${totalEdits} trailing spaces in ${totalFilesProcessed - ignoredFiles} files. ${ignoredFiles} files ignored.`;
-                    vscode.window.setStatusBarMessage(message);
-                    this.logger.info(message);
-                });
-            } else {
-                let message: string = `No trailing spaces to delete in ${totalFilesProcessed - ignoredFiles} files. ${ignoredFiles} files ignored.`;
-                vscode.window.setStatusBarMessage(message);
-                this.logger.info(message);
-            }
-        }, (reason: any) => {
-            this.logger.error(reason);
-        });
-    }
-
-    /**
-     * Deletes trailing spaces within the given document.
-     *
-     * @private
-     * @param {vscode.TextDocument} document The document from which the ranges have to be found
-     * @param {TralingSpacesSettings} settings The settings to be used
-     * @param {vscode.TextLine} currentLine The line on which the cursor currently is
-     * @param {vscode.WorkspaceEdit} workspaceEdit The workspaceEdit instance to be used to apply edits
-     * @returns {number} The number of trailing space regions deleted. If the file was ignored, undefined will be returned
-     */
-    private deleteTrailingRegions(document: vscode.TextDocument, settings: TralingSpacesSettings, currentLine: vscode.TextLine, workspaceEdit: vscode.WorkspaceEdit): number {
-        let edits: number = 0;
-        if (this.ignoreFile(document.languageId)) {
-            edits = undefined;
-        } else {
-            let regions: vscode.Range[] = this.getRegionsToDelete(document, settings, currentLine);
-            // Delete from the bottom to the top
-            for (let i: number = regions.length - 1; i >= 0; i--) {
-                workspaceEdit.delete(document.uri, regions[i]);
-            }
-            edits = regions.length;
-        }
-        return edits;
+        this.deleteTrailingSpaces(editor, editorEdit, true);
     }
 
     /**
      * Highlights the trailing spaces in the current editor.
      *
      * @private
-     * @param {vscode.TextEditor} editor The editor for which the spaces have to be highlighted
+     * @param {vscode.TextEditor} editor The editor in which the spaces have to be highlighted
      */
-    private matchTrailingSpaces(editor: vscode.TextEditor): void {
-        let regions: TrailingRegions = { offendingLines: [], highlightable: [] };
-        if (this.ignoreFile(editor.document.languageId)) {
-            this.logger.info(`File with langauge '${editor.document.languageId}' ignored - ${editor.document.fileName}`);
-        } else {
-            let posn = editor.document.validatePosition(editor.selection.end)
-            regions = this.findTrailingSpaces(editor.document, this.settings, editor.document.lineAt(posn));
+    private highlightTrailingSpaces(editor: vscode.TextEditor): void {
+        editor.setDecorations(this.decorationType, this.getRangesToHighlight(editor.document, editor.selection));
+    }
+
+    /**
+     * Deletes the trailing spaces in the current editor.
+     * 
+     * @private
+     * @param {vscode.TextEditor} editor The editor in which the spaces have to be deleted
+     * @param {vscode.TextEditorEdit} editBuilder The edit builders for apply deletions
+     * @param {boolean} deleteModifiedLinesOnlyOverride Whether to only deleted modified lines regardless of the settings
+     */
+    private deleteTrailingSpaces(editor: vscode.TextEditor, editBuilder: vscode.TextEditorEdit, deleteModifiedLinesOnlyOverride: boolean = false): void {
+        let ranges: vscode.Range[] = this.getRangesToDelete(editor.document, deleteModifiedLinesOnlyOverride);
+        for (let i: number = ranges.length - 1; i >= 0; i--) {
+            editBuilder.delete(ranges[i]);
         }
-        this.matchedRegions[editor.document.uri.toString()] = regions;
-        editor.setDecorations(this.decorationType, regions.highlightable);
+        this.showStatusBarMessage(editor.document, ranges.length, true)
+    }
+
+    /**
+     * Returns the edits required to delete the trailings spaces from a document
+     * 
+     * @param {vscode.TextDocument} document The document in which the trailing spaces should be found
+     * @returns {vscode.TextEdit[]} An array of edits required to delete the trailings spaces from the document
+     */
+    public getEditsForDeletingTralingSpaces(document: vscode.TextDocument): vscode.TextEdit[] {
+        let ranges: vscode.Range[] = this.getRangesToDelete(document);
+        let edits: vscode.TextEdit[] = new Array<vscode.TextEdit>(ranges.length);
+        for (let i: number = ranges.length - 1; i >= 0; i--) {
+            edits[ranges.length - 1 - i] = vscode.TextEdit.delete(ranges[i]);
+        }
+        this.showStatusBarMessage(document, ranges.length);
+        return edits;
+    }
+
+    /**
+     * Displays a status bar message containing the number of trailing space regions deleted
+     * 
+     * @private
+     * @param {vscode.TextDocument} document The document for which the message has to be shown 
+     * @param {number} numRegions Number of trailing space regions found
+     * @param {boolean} showIfNoRegions Should the message be shown even if no regions are founds 
+     */
+    private showStatusBarMessage(document: vscode.TextDocument, numRegions: number, showIfNoRegions: boolean = false): void {
+        let message: string;
+        if (numRegions > 0) {
+            message = `Deleting ${numRegions} trailing space region${(numRegions > 1 ? "s" : "")}`;
+        } else {
+            message = "No trailing spaces to delete!";
+        }
+        this.logger.info(message + " - " + document.fileName);
+        if (numRegions > 0 || showIfNoRegions) {
+            vscode.window.setStatusBarMessage(message, 3000);
+        }
+    }
+
+    /**
+     * Gets trailing spaces ranges which have to be highlighted. 
+     *
+     * @private
+     * @param {vscode.TextDocument} document The document in which the trailing spaces should be found
+     * @param {vscode.Selection} selection The current selection inside the editor
+     * @returns {vscode.Range[]} An array of ranges containing the trailing spaces
+     */
+    private getRangesToHighlight(document: vscode.TextDocument, selection: vscode.Selection): vscode.Range[] {
+        let ranges: vscode.Range[] = this.findTrailingSpaces(document);
+
+        if (!this.settings.highlightCurrentLine) {
+            let currentPosition: vscode.Position = document.validatePosition(selection.end)
+            let currentLine: vscode.TextLine = document.lineAt(currentPosition);
+
+            ranges = ranges.filter(range => {
+                return range.intersection(currentLine.range) == undefined
+            });
+        }
+
+        return ranges;
+    }
+
+    /**
+     * Gets trailing spaces ranges which have to be deleted. 
+     *
+     * @private
+     * @param {vscode.TextDocument} document The document in which the trailing spaces should be found
+     * @param {boolean} deleteModifiedLinesOnlyOverride Whether to delete only modified lines regardless of the settings
+     * @returns {vscode.Range[]} An array of ranges containing the trailing spaces
+     */
+    private getRangesToDelete(document: vscode.TextDocument, deleteModifiedLinesOnlyOverride: boolean = false): vscode.Range[] {
+        let ranges: vscode.Range[] = this.findTrailingSpaces(document);
+
+        // If deleteModifiedLinesOnly is set, filter out the ranges contained in the non-modified lines
+        if ((this.settings.deleteModifiedLinesOnly || deleteModifiedLinesOnlyOverride)
+            && !document.isUntitled && document.uri.scheme == "file") {
+            let modifiedLines: Set<number> = utils.getModifiedLineNumbers(fs.readFileSync(document.uri.fsPath, "utf-8"), document.getText());
+            ranges = ranges.filter((range: vscode.Range) => {
+                return (modifiedLines.has(range.start.line));
+            });
+        }
+        return ranges;
+    }
+
+    /**
+     * Finds all ranges in the document which contain trailing spaces
+     * 
+     * @private
+     * @param {vscode.TextDocument} document The document in which the trailing spaces should be found 
+     * @returns {vscode.Range[]} An array of ranges containing the trailing spaces
+     */
+    private findTrailingSpaces(document: vscode.TextDocument): vscode.Range[] {
+        if (this.ignoreFile(document.languageId)) {
+            this.logger.info(`File with langauge '${document.languageId}' ignored - ${document.fileName}`);
+            return [];
+        } else {
+            let offendingRanges: vscode.Range[] = [];
+            let regexp: string = "(" + this.settings.regexp + ")$";
+            let noEmptyLinesRegexp: string = "\\S" + regexp;
+            let offendingRangesRegexp: RegExp = new RegExp(this.settings.includeEmptyLines ? regexp : noEmptyLinesRegexp, "gm");
+            let documentText: string = document.getText();
+
+            let match: RegExpExecArray | null;
+            // Loop through all the trailing spaces in the document
+            while ((match = offendingRangesRegexp.exec(documentText)) !== null) {
+                let matchStart: number = (match.index + match[0].length - match[1].length),
+                    matchEnd: number = match.index + match[0].length;
+                let matchRange: vscode.Range = new vscode.Range(document.positionAt(matchStart), document.positionAt(matchEnd));
+                // Ignore ranges which are empty (only containing a single line ending)
+                if (!matchRange.isEmpty) {
+                    offendingRanges.push(matchRange);
+                }
+            }
+            return offendingRanges;
+        }
     }
 
     /**
@@ -283,90 +186,6 @@ export class TrailingSpaces {
      * @returns {boolean} A boolean indicating if the file needs to be ignored
      */
     private ignoreFile(language: string): boolean {
-        return language ? (this.languagesToIgnore[language] == true) : false;
-    }
-
-    /**
-     * Stores the version of the file on the disk in order to compare and get the modified lines.
-     *
-     * @private
-     * @param {vscode.TextDocument} document The document whose `on disk` version has to fetched
-     */
-    private freezeLastVersion(document: vscode.TextDocument): void {
-        if (document.isUntitled) return;
-        this.onDisk[document.uri.toString()] = fs.readFileSync(document.uri.fsPath, "utf-8");
-        this.logger.log(`File frozen - ${document.uri.fsPath}`);
-    }
-
-    /**
-     * Gets ranges which have to be deleted. Avoids finding regions again if live matching is enabled and regions have already been matched for the document;
-     * returns the already matched ranges instead.
-     *
-     * @private
-     * @param {vscode.TextDocument} document The document from which the ranges have to be found
-     * @param {TralingSpacesSettings} settings The settings to be used
-     * @param {vscode.TextLine} [currentLine=null] The line on which the cursor currently is
-     * @returns {vscode.Range[]} An array of ranges to be deleted
-     */
-    private getRegionsToDelete(document: vscode.TextDocument, settings: TralingSpacesSettings, currentLine: vscode.TextLine = null): vscode.Range[] {
-        let regions: TrailingRegions;
-        // If regions have already been matched for the document, return them instead of finding them again
-        if (settings.liveMatching && this.matchedRegions[document.uri.toString()]) {
-            regions = this.matchedRegions[document.uri.toString()];
-        } else {
-            regions = this.findTrailingSpaces(document, settings, currentLine);
-        }
-        // If deleteModifiedLinesOnly is set, filter out the ranges contained in the non-modified lines
-        if (settings.deleteModifiedLinesOnly && !document.isUntitled) {
-            let modifiedLines: number[] = utils.getModifiedLineNumbers(this.onDisk[document.uri.toString()], document.getText());
-            regions.offendingLines = regions.offendingLines.filter((range: vscode.Range) => {
-                return (modifiedLines.indexOf(range.start.line) >= 0);
-            });
-        }
-        return regions.offendingLines;
-    }
-
-    /**
-     * Finds all ranges in the document which contain trailing spaces based on the settings.
-     *
-     * @private
-     * @param {vscode.TextDocument} document The document in which the trailing spaces should be found
-     * @param {TralingSpacesSettings} settings The settings to be used
-     * @param {vscode.TextLine} [currentLine=null] The line on which the cursor currently is. Only used in case the `highlightCurrentLine` property is set to false
-     * @returns {TrailingRegions} An object containg 2 arrays of ranges; first has all the ranges, second contains only the ranges to be highlighted
-     */
-    private findTrailingSpaces(document: vscode.TextDocument, settings: TralingSpacesSettings, currentLine: vscode.TextLine = null): TrailingRegions {
-        let regexp: string = "(" + settings.regexp + ")$";
-        let noEmptyLinesRegexp = "\\S" + regexp;
-        let offendingRangesRegexp: RegExp = new RegExp(settings.includeEmptyLines ? regexp : noEmptyLinesRegexp, "gm");
-        let offendingRanges: vscode.Range[] = [];
-        let highlightable: vscode.Range[] = [];
-        let documentText: string = document.getText();
-        let currentLineStart: number = document.offsetAt(currentLine.range.start),
-            currentLineEnd: number = document.offsetAt(currentLine.range.end);
-        let match: RegExpExecArray;
-        // Loop through all the trailing spaces in the document
-        while (match = offendingRangesRegexp.exec(documentText)) {
-            let matchStart: number = (match.index + match[0].length - match[1].length),
-                matchEnd: number = match.index + match[0].length;
-            let matchRange: vscode.Range = new vscode.Range(document.positionAt(matchStart), document.positionAt(matchEnd));
-            // Ignore ranges which are empty (only containing a single line ending)
-            if (!matchRange.isEmpty) {
-                offendingRanges.push(matchRange);
-                let overlap: boolean = (matchEnd >= currentLineStart && currentLineEnd >= matchStart); // Checks whether the range or a part of it lies in the current line
-                if (!settings.highlightCurrentLine && currentLine && overlap) {
-                    // Push only those parts of the range which do not lie in the current line
-                    if (matchStart < currentLineStart) {
-                        highlightable.push(new vscode.Range(matchRange.start, currentLine.range.start));
-                    }
-                    if (currentLineEnd < matchEnd) {
-                        highlightable.push(new vscode.Range(currentLine.range.end, matchRange.end));
-                    }
-                } else {
-                    highlightable.push(matchRange);
-                }
-            }
-        }
-        return { offendingLines: offendingRanges, highlightable: highlightable };
+        return language ? (this.settings.languagesToIgnore[language] == true) : false;
     }
 }
