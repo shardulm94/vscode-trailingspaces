@@ -49,7 +49,7 @@ export class TrailingSpaces {
 
     /**
      * Deletes the trailing spaces in the current editor.
-     * 
+     *
      * @private
      * @param {vscode.TextEditor} editor The editor in which the spaces have to be deleted
      * @param {vscode.TextEditorEdit} editBuilder The edit builders for apply deletions
@@ -65,7 +65,7 @@ export class TrailingSpaces {
 
     /**
      * Returns the edits required to delete the trailings spaces from a document
-     * 
+     *
      * @param {vscode.TextDocument} document The document in which the trailing spaces should be found
      * @returns {vscode.TextEdit[]} An array of edits required to delete the trailings spaces from the document
      */
@@ -81,11 +81,11 @@ export class TrailingSpaces {
 
     /**
      * Displays a status bar message containing the number of trailing space regions deleted
-     * 
+     *
      * @private
-     * @param {vscode.TextDocument} document The document for which the message has to be shown 
+     * @param {vscode.TextDocument} document The document for which the message has to be shown
      * @param {number} numRegions Number of trailing space regions found
-     * @param {boolean} showIfNoRegions Should the message be shown even if no regions are founds 
+     * @param {boolean} showIfNoRegions Should the message be shown even if no regions are founds
      */
     private showStatusBarMessage(document: vscode.TextDocument, numRegions: number, showIfNoRegions: boolean = false): void {
         let message: string;
@@ -101,7 +101,7 @@ export class TrailingSpaces {
     }
 
     /**
-     * Gets trailing spaces ranges which have to be highlighted. 
+     * Gets trailing spaces ranges which have to be highlighted.
      *
      * @private
      * @param {vscode.TextDocument} document The document in which the trailing spaces should be found
@@ -124,7 +124,7 @@ export class TrailingSpaces {
     }
 
     /**
-     * Gets trailing spaces ranges which have to be deleted. 
+     * Gets trailing spaces ranges which have to be deleted.
      *
      * @private
      * @param {vscode.TextDocument} document The document in which the trailing spaces should be found
@@ -147,9 +147,9 @@ export class TrailingSpaces {
 
     /**
      * Finds all ranges in the document which contain trailing spaces
-     * 
+     *
      * @private
-     * @param {vscode.TextDocument} document The document in which the trailing spaces should be found 
+     * @param {vscode.TextDocument} document The document in which the trailing spaces should be found
      * @returns {vscode.Range[]} An array of ranges containing the trailing spaces
      */
     private findTrailingSpaces(document: vscode.TextDocument): vscode.Range[] {
