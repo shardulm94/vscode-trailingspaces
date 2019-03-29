@@ -63,6 +63,11 @@
           "type": "boolean",
           "default": false,
           "description": "By default, nothing happens on save. Set to true to trim trailing spaces before saving, with respect to the other settings."
+        },
+        "trailing-spaces.showStatusBarMessage": {
+          "type": "boolean",
+          "default": true,
+          "description": "By default, trailing space deletions will be communicated through a status bar message. Set to false to disable these messages."
         }
       }
     },

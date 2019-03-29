@@ -95,8 +95,10 @@ export class TrailingSpaces {
             message = "No trailing spaces to delete!";
         }
         this.logger.info(message + " - " + document.fileName);
-        if (numRegions > 0 || showIfNoRegions) {
-            vscode.window.setStatusBarMessage(message, 3000);
+        if (this.settings.showStatusBarMessage) {
+            if (numRegions > 0 || showIfNoRegions) {
+                vscode.window.setStatusBarMessage(message, 3000);
+            }
         }
     }
 

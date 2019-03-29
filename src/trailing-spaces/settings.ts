@@ -11,7 +11,8 @@ export interface TrailingSpacesSettings {
     liveMatching: boolean,
     deleteModifiedLinesOnly: boolean,
     languagesToIgnore: { [id: string]: boolean; },
-    trimOnSave: boolean
+    trimOnSave: boolean,
+    showStatusBarMessage: boolean
 }
 
 export class Settings implements TrailingSpacesSettings {
@@ -28,6 +29,7 @@ export class Settings implements TrailingSpacesSettings {
     deleteModifiedLinesOnly!: boolean;
     languagesToIgnore!: { [id: string]: boolean; };
     trimOnSave!: boolean;
+    showStatusBarMessage!: boolean;
 
     constructor() {
         if (!Settings.instance) {
@@ -51,6 +53,7 @@ export class Settings implements TrailingSpacesSettings {
         this.deleteModifiedLinesOnly = this.config.get<boolean>('deleteModifiedLinesOnly');
         this.languagesToIgnore = this.getLanguagesToIgnore(this.config.get<string[]>('syntaxIgnore'));
         this.trimOnSave = this.config.get<boolean>('trimOnSave');
+        this.showStatusBarMessage = this.config.get<boolean>('showStatusBarMessage');
         this.logger.setLogLevel(this.logLevel);
         this.logger.setPrefix('Trailing Spaces');
         this.logger.log('Configuration loaded');
@@ -66,6 +69,7 @@ export class Settings implements TrailingSpacesSettings {
         config.update('deleteModifiedLinesOnly', undefined, true);
         config.update('syntaxIgnore', undefined, true);
         config.update('trimOnSave', undefined, true);
+        config.update('showStatusBarMessage', undefined, true);
         this.refreshSettings()
     }
 
