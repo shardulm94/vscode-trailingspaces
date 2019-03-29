@@ -10,19 +10,10 @@ import fs = require('fs');
 export class TrailingSpaces {
     private logger: ILogger;
     private settings: TrailingSpacesSettings;
-    private decorationOptions: vscode.DecorationRenderOptions = {
-        borderRadius: "3px",
-        borderWidth: "1px",
-        borderStyle: "solid",
-        backgroundColor: "rgba(255,0,0,0.3)",
-        borderColor: "rgba(255,100,100,0.15)"
-    };
-    private decorationType: vscode.TextEditorDecorationType;
 
     constructor() {
         this.logger = Logger.getInstance();
         this.settings = Settings.getInstance();
-        this.decorationType = vscode.window.createTextEditorDecorationType(this.decorationOptions);
     }
 
     public highlight(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit | undefined = undefined): void {
@@ -44,7 +35,7 @@ export class TrailingSpaces {
      * @param {vscode.TextEditor} editor The editor in which the spaces have to be highlighted
      */
     private highlightTrailingSpaces(editor: vscode.TextEditor): void {
-        editor.setDecorations(this.decorationType, this.getRangesToHighlight(editor.document, editor.selection));
+        editor.setDecorations(this.settings.textEditorDecorationType, this.getRangesToHighlight(editor.document, editor.selection));
     }
 
     /**

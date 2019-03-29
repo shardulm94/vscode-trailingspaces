@@ -62,12 +62,22 @@
         "trailing-spaces.trimOnSave": {
           "type": "boolean",
           "default": false,
-          "description": "By default, nothing happens on save. Set to true to trim trailing spaces before saving, with respect to the other settings."
+          "description": "Controls whether trailing spaces are trimmed automatically when saving a file."
         },
         "trailing-spaces.showStatusBarMessage": {
           "type": "boolean",
           "default": true,
           "description": "By default, trailing space deletions will be communicated through a status bar message. Set to false to disable these messages."
+        },
+        "trailing-spaces.backgroundColor": {
+          "type": "string",
+          "default": "rgba(255,0,0,0.3)",
+          "description": "Controls the background color of the trailing space decoration."
+        },
+        "trailing-spaces.borderColor": {
+          "type": "string",
+          "default": "rgba(255,100,100,0.15)",
+          "description": "Controls the color of the border around the trailing space decoration."
         }
       }
     },

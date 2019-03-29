@@ -12,13 +12,13 @@ export interface TrailingSpacesSettings {
     deleteModifiedLinesOnly: boolean,
     languagesToIgnore: { [id: string]: boolean; },
     trimOnSave: boolean,
-    showStatusBarMessage: boolean
+    showStatusBarMessage: boolean,
+    textEditorDecorationType: vscode.TextEditorDecorationType
 }
 
 export class Settings implements TrailingSpacesSettings {
 
     private static instance: Settings = new Settings();
-    private config!: vscode.WorkspaceConfiguration;
     private logger!: ILogger;
 
     logLevel!: LogLevel;
@@ -30,6 +30,7 @@ export class Settings implements TrailingSpacesSettings {
     languagesToIgnore!: { [id: string]: boolean; };
     trimOnSave!: boolean;
     showStatusBarMessage!: boolean;
+    textEditorDecorationType!: vscode.TextEditorDecorationType;
 
     constructor() {
         if (!Settings.instance) {
@@ -44,16 +45,17 @@ export class Settings implements TrailingSpacesSettings {
     }
 
     public refreshSettings(): void {
-        this.config = vscode.workspace.getConfiguration('trailing-spaces');
-        this.logLevel = LogLevel[this.config.get<keyof typeof LogLevel>('logLevel')];
-        this.includeEmptyLines = this.config.get<boolean>('includeEmptyLines');
-        this.highlightCurrentLine = this.config.get<boolean>('highlightCurrentLine');
-        this.regexp = this.config.get<string>('regexp');
-        this.liveMatching = this.config.get<boolean>('liveMatching');
-        this.deleteModifiedLinesOnly = this.config.get<boolean>('deleteModifiedLinesOnly');
-        this.languagesToIgnore = this.getLanguagesToIgnore(this.config.get<string[]>('syntaxIgnore'));
-        this.trimOnSave = this.config.get<boolean>('trimOnSave');
-        this.showStatusBarMessage = this.config.get<boolean>('showStatusBarMessage');
+        let config: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration('trailing-spaces');
+        this.logLevel = LogLevel[config.get<keyof typeof LogLevel>('logLevel')];
+        this.includeEmptyLines = config.get<boolean>('includeEmptyLines');
+        this.highlightCurrentLine = config.get<boolean>('highlightCurrentLine');
+        this.regexp = config.get<string>('regexp');
+        this.liveMatching = config.get<boolean>('liveMatching');
+        this.deleteModifiedLinesOnly = config.get<boolean>('deleteModifiedLinesOnly');
+        this.languagesToIgnore = this.getLanguagesToIgnore(config.get<string[]>('syntaxIgnore'));
+        this.trimOnSave = config.get<boolean>('trimOnSave');
+        this.showStatusBarMessage = config.get<boolean>('showStatusBarMessage');
+        this.textEditorDecorationType = this.getTextEditorDecorationType(config.get<string>('backgroundColor'), config.get<string>('borderColor'));
         this.logger.setLogLevel(this.logLevel);
         this.logger.setPrefix('Trailing Spaces');
         this.logger.log('Configuration loaded');
@@ -70,7 +72,9 @@ export class Settings implements TrailingSpacesSettings {
         config.update('syntaxIgnore', undefined, true);
         config.update('trimOnSave', undefined, true);
         config.update('showStatusBarMessage', undefined, true);
-        this.refreshSettings()
+        config.update('backgroundColor', undefined, true);
+        config.update('borderColor', undefined, true);
+        this.refreshSettings();
     }
 
     private getLanguagesToIgnore(syntaxIgnore: string[]): { [id: string]: boolean; } {
@@ -79,5 +83,15 @@ export class Settings implements TrailingSpacesSettings {
             this.languagesToIgnore[language] = true;
         });
         return languagesToIgnore;
+    }
+
+    private getTextEditorDecorationType(backgroundColor: string, borderColor: string): vscode.TextEditorDecorationType {
+        return vscode.window.createTextEditorDecorationType({
+            borderRadius: "3px",
+            borderWidth: "1px",
+            borderStyle: "solid",
+            backgroundColor: backgroundColor,
+            borderColor: borderColor
+        });
     }
 }
