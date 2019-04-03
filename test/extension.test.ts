@@ -57,6 +57,11 @@ describe("Extension Tests", () => {
             assertDeleteTrailingSpaces(testEditor, './files/should_not_delete_spaces.js', done);
         });
 
+        it("should not delete trailing spaces when file scheme is set in schemeIgnore", (done: MochaDone) => {
+            settings.schemesToIgnore[testEditor.document.uri.scheme] = true;
+            assertDeleteTrailingSpaces(testEditor, './files/should_not_delete_spaces.js', done);
+        });
+
         it("should delete all trailing spaces including blank lines when regex is [\\s]+", (done: MochaDone) => {
             settings.regexp = "[\\s]+";
             assertDeleteTrailingSpaces(testEditor, './files/delete_all_trailing_spaces_including_blank_lines.js', done);

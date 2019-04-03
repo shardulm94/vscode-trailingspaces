@@ -11,6 +11,7 @@ export interface TrailingSpacesSettings {
     liveMatching: boolean,
     deleteModifiedLinesOnly: boolean,
     languagesToIgnore: { [id: string]: boolean; },
+    schemesToIgnore: { [id: string]: boolean; },
     trimOnSave: boolean,
     showStatusBarMessage: boolean,
     textEditorDecorationType: vscode.TextEditorDecorationType
@@ -28,6 +29,7 @@ export class Settings implements TrailingSpacesSettings {
     liveMatching!: boolean;
     deleteModifiedLinesOnly!: boolean;
     languagesToIgnore!: { [id: string]: boolean; };
+    schemesToIgnore!: { [id: string]: boolean; };
     trimOnSave!: boolean;
     showStatusBarMessage!: boolean;
     textEditorDecorationType!: vscode.TextEditorDecorationType;
@@ -52,7 +54,8 @@ export class Settings implements TrailingSpacesSettings {
         this.regexp = config.get<string>('regexp');
         this.liveMatching = config.get<boolean>('liveMatching');
         this.deleteModifiedLinesOnly = config.get<boolean>('deleteModifiedLinesOnly');
-        this.languagesToIgnore = this.getLanguagesToIgnore(config.get<string[]>('syntaxIgnore'));
+        this.languagesToIgnore = this.getMapFromStringArray(config.get<string[]>('syntaxIgnore'));
+        this.schemesToIgnore = this.getMapFromStringArray(config.get<string[]>('schemeIgnore'));
         this.trimOnSave = config.get<boolean>('trimOnSave');
         this.showStatusBarMessage = config.get<boolean>('showStatusBarMessage');
         this.textEditorDecorationType = this.getTextEditorDecorationType(config.get<string>('backgroundColor'), config.get<string>('borderColor'));
@@ -70,6 +73,7 @@ export class Settings implements TrailingSpacesSettings {
         config.update('liveMatching', undefined, true);
         config.update('deleteModifiedLinesOnly', undefined, true);
         config.update('syntaxIgnore', undefined, true);
+        config.update('schemeIgnore', undefined, true);
         config.update('trimOnSave', undefined, true);
         config.update('showStatusBarMessage', undefined, true);
         config.update('backgroundColor', undefined, true);
@@ -77,12 +81,12 @@ export class Settings implements TrailingSpacesSettings {
         this.refreshSettings();
     }
 
-    private getLanguagesToIgnore(syntaxIgnore: string[]): { [id: string]: boolean; } {
-        let languagesToIgnore: { [id: string]: boolean; } = {};
-        syntaxIgnore.forEach((language: string) => {
-            languagesToIgnore[language] = true;
+    private getMapFromStringArray(array: string[]): { [id: string]: boolean; } {
+        let map: { [id: string]: boolean; } = {};
+        array.forEach((element: string) => {
+            map[element] = true;
         });
-        return languagesToIgnore;
+        return map;
     }
 
     private getTextEditorDecorationType(backgroundColor: string, borderColor: string): vscode.TextEditorDecorationType {

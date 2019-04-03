@@ -5,6 +5,7 @@ import { ILogger, Logger } from './logger';
 import { Settings, TrailingSpacesSettings } from './settings';
 import * as utils from './utils';
 import fs = require('fs');
+import { isNullOrUndefined } from 'util';
 
 
 export class TrailingSpaces {
@@ -146,8 +147,8 @@ export class TrailingSpaces {
      * @returns {vscode.Range[]} An array of ranges containing the trailing spaces
      */
     private findTrailingSpaces(document: vscode.TextDocument): vscode.Range[] {
-        if (this.ignoreFile(document.languageId)) {
-            this.logger.info(`File with langauge '${document.languageId}' ignored - ${document.fileName}`);
+        if (this.ignoreDocument(document.languageId, document.uri.scheme)) {
+            this.logger.info(`File with langauge '${document.languageId}' and scheme '${document.uri.scheme}' ignored - ${document.fileName}`);
             return [];
         } else {
             let offendingRanges: vscode.Range[] = [];
@@ -172,13 +173,15 @@ export class TrailingSpaces {
     }
 
     /**
-     * Checks if the language of the file is set to be ignored.
+     * Checks if the language or the scheme of the document is set to be ignored.
      *
      * @private
-     * @param {string} language The language of the file to be checked
-     * @returns {boolean} A boolean indicating if the file needs to be ignored
+     * @param {string} language The language of the document to be checked
+     * @param {string} scheme The scheme of the document to be checked
+     * @returns {boolean} A boolean indicating if the document needs to be ignored
      */
-    private ignoreFile(language: string): boolean {
-        return language ? (this.settings.languagesToIgnore[language] == true) : false;
+    private ignoreDocument(language: string, scheme: string): boolean {
+        return (!isNullOrUndefined(language) && this.settings.languagesToIgnore[language]
+            || !isNullOrUndefined(scheme) && this.settings.schemesToIgnore[scheme]);
     }
 }

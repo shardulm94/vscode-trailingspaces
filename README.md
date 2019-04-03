@@ -188,7 +188,18 @@ Here is a list of all languages that VS Code supports (as of 28 March 2019):
 bat, c, clojure, coffeescript, cpp, csharp, css, diff, dockerfile, fsharp, git-commit, git-rebase, go, groovy, handlebars, hexdump, hlsl, hocon, html, ignore, ini, jade, java, javascript, javascriptreact, jinja, json, jsonc, jsx-tags, jupyter, less, Log, log, lua, makefile, markdown, objective-c, objective-cpp, perl, perl6, php, pig, pip-requirements, plaintext, powershell, properties, python, r, razor, ruby, rust, scss, shaderlab, shellscript, sql, swift, toml, typescript, typescriptreact, vb, xml, xsl, yaml
 ```
 
-For the most recent list of langauges, please use the `languages.getLanguages()` function (details [here](https://code.visualstudio.com/docs/extensionAPI/vscode-api#languages.getLanguages)).
+For the most recent list of langauges, please use the [known language identifiers](https://code.visualstudio.com/docs/languages/identifiers#_known-language-identifiers) page or the `languages.getLanguages()` function (details [here](https://code.visualstudio.com/docs/extensionAPI/vscode-api#languages.getLanguages)).
+
+### Ignore Scheme
+
+*Default: []*
+
+With this option you can ignore documents with a specific scheme. An item has to match the case-sensitive string of the scheme of the document. For instance, if you want to ignore VSCode output windows:
+
+``` js
+// documents with the scheme "output" are ignored
+{ "trailing-spaces.schemeIgnore": ["output"]}
+```
 
 ### Show Status Bar Message
 

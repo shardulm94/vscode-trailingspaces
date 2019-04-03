@@ -2,7 +2,7 @@
   "name": "trailing-spaces",
   "displayName": "Trailing Spaces",
   "description": "Highlight trailing spaces and delete them in a flash!",
-  "version": "0.3.0-rc3",
+  "version": "0.3.0-rc4",
   "publisher": "shardulm94",
   "icon": "icon.png",
   "engines": {
@@ -58,6 +58,11 @@
           "type": "array",
           "default": [],
           "description": "With this option you can ignore specific files based on the syntax used. An item has to match the case-sensitive string of the language used in the file."
+        },
+        "trailing-spaces.schemeIgnore": {
+          "type": "array",
+          "default": [],
+          "description": "With this option you can ignore specific schemes. An item has to match the case-sensitive string of the scheme of the document."
         },
         "trailing-spaces.trimOnSave": {
           "type": "boolean",
