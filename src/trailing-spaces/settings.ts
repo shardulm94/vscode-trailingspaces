@@ -80,7 +80,7 @@ export class Settings implements TrailingSpacesSettings {
     private getLanguagesToIgnore(syntaxIgnore: string[]): { [id: string]: boolean; } {
         let languagesToIgnore: { [id: string]: boolean; } = {};
         syntaxIgnore.forEach((language: string) => {
-            this.languagesToIgnore[language] = true;
+            languagesToIgnore[language] = true;
         });
         return languagesToIgnore;
     }
