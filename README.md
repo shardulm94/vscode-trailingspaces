@@ -26,6 +26,7 @@ This extension is a port of the popular [Sublime Text](https://www.sublimetext.c
 	- [~~Save After Trim~~ *[REMOVED]*](#save-after-trim-removed)
 	- [Live Matching vs On-demand Matching](#live-matching-vs-on-demand-matching)
 	- [Ignore Syntax](#ignore-syntax)
+	- [Ignore Scheme](#ignore-scheme)
 	- [Show Status Bar Message](#show-status-bar-message)
 	- [Background Color](#background-color)
 	- [Border Color](#border-color)
@@ -249,3 +250,4 @@ Contributions
 -------------
 - [@HookyQR](https://github.com/HookyQR): Fixed error while deleting last line of text [PR #9](https://github.com/shardulm94/vscode-trailingspaces/pull/9)
 - [@yustnip](https://github.com/yustnip): Added options to change background and border colors of highlighting [PR #17](https://github.com/shardulm94/vscode-trailingspaces/pull/17)
+- [@ameily](https://github.com/ameily): Properly trim spaces using the new TextEditor.edit() callback [PR #26](https://github.com/shardulm94/vscode-trailingspaces/pull/26)
