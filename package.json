@@ -2,11 +2,11 @@
   "name": "trailing-spaces",
   "displayName": "Trailing Spaces",
   "description": "Highlight trailing spaces and delete them in a flash!",
-  "version": "0.2.11",
+  "version": "0.3.0",
   "publisher": "shardulm94",
   "icon": "icon.png",
   "engines": {
-    "vscode": "^0.10.1"
+    "vscode": "^1.6.0"
   },
   "categories": [
     "Other"
@@ -26,7 +26,7 @@
             "warn",
             "error"
           ],
-          "default": "error",
+          "default": "warn",
           "description": "Controls the verbosity of logging. Logs can be seen in the console by opening the dev tools. `log` is the most verbose and `error` will only show critical errors."
         },
         "trailing-spaces.includeEmptyLines": {
@@ -59,15 +59,30 @@
           "default": [],
           "description": "With this option you can ignore specific files based on the syntax used. An item has to match the case-sensitive string of the language used in the file."
         },
+        "trailing-spaces.schemeIgnore": {
+          "type": "array",
+          "default": ["output"],
+          "description": "With this option you can ignore specific schemes. An item has to match the case-sensitive string of the scheme of the document."
+        },
         "trailing-spaces.trimOnSave": {
           "type": "boolean",
           "default": false,
-          "description": "By default, nothing happens on save. Set to true to trim trailing spaces before saving, with respect to the other settings."
+          "description": "Controls whether trailing spaces are trimmed automatically when saving a file."
         },
-        "trailing-spaces.saveAfterTrim": {
+        "trailing-spaces.showStatusBarMessage": {
           "type": "boolean",
-          "default": false,
-          "description": "By default, deleting trailing spaces does not cause the document to be saved. Set to true to force saving after trailing spaces have been deleted. This setting is irrelevant and will be ignored if trimOnSave is true."
+          "default": true,
+          "description": "By default, trailing space deletions will be communicated through a status bar message. Set to false to disable these messages."
+        },
+        "trailing-spaces.backgroundColor": {
+          "type": "string",
+          "default": "rgba(255,0,0,0.3)",
+          "description": "Controls the background color of the trailing space decoration."
+        },
+        "trailing-spaces.borderColor": {
+          "type": "string",
+          "default": "rgba(255,100,100,0.15)",
+          "description": "Controls the color of the border around the trailing space decoration."
         }
       }
     },
@@ -93,28 +108,29 @@
     "onCommand:trailing-spaces.deleteTrailingSpaces",
     "onCommand:trailing-spaces.deleteTrailingSpacesModifiedLinesOnly",
     "onCommand:trailing-spaces.highlightTrailingSpaces",
-    "onCommand:trailing-spaces.deleteInFolder",
-    "onCommand:trailing-spaces.deleteInFolderRecursive",
     "*"
   ],
   "scripts": {
-    "vscode:prepublish": "node ./node_modules/vscode/bin/compile",
-    "compile": "node ./node_modules/vscode/bin/compile -watch -p ./",
-    "test": "node ./node_modules/vscode/bin/test",
+    "vscode:prepublish": "tsc -p ./",
+    "compile": "tsc -watch -p ./",
+    "postinstall": "node ./node_modules/vscode/bin/install",
     "pretest": "ncp test/files out/test/files",
-    "postinstall": "node ./node_modules/vscode/bin/install"
+    "test": "node ./node_modules/vscode/bin/test"
   },
   "devDependencies": {
+    "typescript": "^3.3.0",
+    "vscode": "^1.0.0",
+    "mocha": "^5.0.0",
+    "@types/node": "^6.0.40",
+    "@types/mocha": "^5.0.0",
     "ncp": "^2.0.0",
-    "typescript": "^1.6.2",
-    "vscode": "^0.11.x"
+    "@types/diff": "^4.0.0"
   },
   "directories": {
     "test": "test"
   },
   "dependencies": {
-    "diff": "^3.0.0",
-    "glob": "^7.0.3"
+    "diff": "^4.0.0"
   },
   "repository": {
     "type": "git",

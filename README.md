@@ -2,7 +2,7 @@ Trailing Spaces
 ===============
 
 [![Build Status](https://travis-ci.org/shardulm94/vscode-trailingspaces.svg?branch=master)](https://travis-ci.org/shardulm94/vscode-trailingspaces)
-[![VS Code Marketplace](http://vsmarketplacebadge.apphb.com/version-short/shardulm94.trailing-spaces.svg) ![Rating](http://vsmarketplacebadge.apphb.com/rating-short/shardulm94.trailing-spaces.svg) ![Installs](http://vsmarketplacebadge.apphb.com/installs/shardulm94.trailing-spaces.svg)](https://marketplace.visualstudio.com/items?itemName=shardulm94.trailing-spaces)
+[![VS Code Marketplace](https://vsmarketplacebadge.apphb.com/version-short/shardulm94.trailing-spaces.svg) ![Rating](https://vsmarketplacebadge.apphb.com/rating-short/shardulm94.trailing-spaces.svg) ![Installs](https://vsmarketplacebadge.apphb.com/installs/shardulm94.trailing-spaces.svg)](https://marketplace.visualstudio.com/items?itemName=shardulm94.trailing-spaces)
 
 A [VS Code](https://code.visualstudio.com/) extension that allows you to…
 
@@ -23,9 +23,13 @@ This extension is a port of the popular [Sublime Text](https://www.sublimetext.c
 	- [Include Empty Lines](#include-empty-lines)
     - [Delete Modified Lines Only](#delete-modified-lines-only)
 	- [Trim On Save](#trim-on-save)
-	- [Save After Trim](#save-after-trim)
+	- [~~Save After Trim~~ *[REMOVED]*](#save-after-trim-removed)
 	- [Live Matching vs On-demand Matching](#live-matching-vs-on-demand-matching)
 	- [Ignore Syntax](#ignore-syntax)
+	- [Ignore Scheme](#ignore-scheme)
+	- [Show Status Bar Message](#show-status-bar-message)
+	- [Background Color](#background-color)
+	- [Border Color](#border-color)
 	- [For power-users only!](#for-power-users-only)
 		- [The matching pattern](#the-matching-pattern)
 
@@ -140,7 +144,9 @@ Setting this to `true` will ensure trailing spaces are deleted when you save you
 { "trailing-spaces.trimOnSave": true }
 ```
 
-### Save After Trim
+### ~~Save After Trim~~ **[REMOVED]**
+
+*NOTE: The current VSCode lifecycle for text editor commands does not provide a clean way to implement this feature. Since I did not see a lot of folks using this option, it was better to remove it.*
 
 *Default: false*
 
@@ -154,7 +160,7 @@ It is obviously ignored if *Trim On Save* is on.
 
 ### Live Matching vs On-demand Matching
 
-*Default: true (reopen VS Code to update)*
+*Default: true (reload VS Code Window to update)*
 
 By default, trailing regions are matched every time you edit the document, and when you open it.
 
@@ -177,13 +183,55 @@ With this option you can ignore specific files based on the language used. An it
 { "trailing-spaces.syntaxIgnore": ["markdown"]}
 ```
 
-Here is a list of all languages that VS Code supports (as of 12 March 2016):
+Here is a list of all languages that VS Code supports (as of 28 March 2019):
 
 ```js
-bat, c, clojure, coffeescript, cpp, css, dockerfile, fsharp, go, groovy, handlebars, html, ini, jade, java, javascript, javascriptreact, json, less, Log, lua, makefile, markdown, objective-c, perl, perl6, php, plaintext, powershell, python, r, razor, ruby, rust, sass, shaderlab, shellscript, sql, swift, typescript, typescriptreact, vb, xml, xsl, ya
+bat, c, clojure, coffeescript, cpp, csharp, css, diff, dockerfile, fsharp, git-commit, git-rebase, go, groovy, handlebars, hexdump, hlsl, hocon, html, ignore, ini, jade, java, javascript, javascriptreact, jinja, json, jsonc, jsx-tags, jupyter, less, Log, log, lua, makefile, markdown, objective-c, objective-cpp, perl, perl6, php, pig, pip-requirements, plaintext, powershell, properties, python, r, razor, ruby, rust, scss, shaderlab, shellscript, sql, swift, toml, typescript, typescriptreact, vb, xml, xsl, yaml
 ```
 
-For the most recent list of langauges, please use the `languages.getLanguages()` function (details [here](https://code.visualstudio.com/docs/extensionAPI/vscode-api#languages.getLanguages)).
+For the most recent list of langauges, please use the [known language identifiers](https://code.visualstudio.com/docs/languages/identifiers#_known-language-identifiers) page or the `languages.getLanguages()` function (details [here](https://code.visualstudio.com/docs/extensionAPI/vscode-api#languages.getLanguages)).
+
+### Ignore Scheme
+
+*Default: ["output"]*
+
+With this option you can ignore documents with a specific scheme. An item has to match the case-sensitive string of the scheme of the document. For instance, if you want to ignore VSCode output windows:
+
+``` js
+// documents with the scheme "output" are ignored
+{ "trailing-spaces.schemeIgnore": ["output"]}
+```
+
+### Show Status Bar Message
+
+*Default: true*
+
+By default, trailing space deletions will be communicated through a status bar message. Set this to `false` as below to disable these messages:
+
+``` js
+{ "trailing-spaces.showStatusBarMessage": false }
+```
+
+### Background Color
+
+*Default: rgba(255,0,0,0.3)*
+
+You can control the background color of the highlighting performed by Trailing Spaces using this option. To set up another color change the setting:
+
+``` js
+{ "trailing-spaces.backgroundColor": "rgba(255,0,0,0.3)" }
+```
+
+### Border Color
+
+*Default: rgba(255,100,100,0.15)*
+
+You can control the border color of the highlighting performed by Trailing Spaces using this option. To set up another color change the setting:
+
+``` js
+{ "trailing-spaces.borderColor": "rgba(255,100,100,0.15)" }
+```
+
 
 ### For power-users only!
 
@@ -200,4 +248,6 @@ Trailing spaces are line-ending regions containing at least one simple space, ta
 
 Contributions
 -------------
-- [@HookyQR](https://github.com/HookyQR): Fixed error while deleting last line of text [PR #9](https://github.com/shardulm94/vscode-trailingspaces/pull/9) 
+- [@HookyQR](https://github.com/HookyQR): Fixed error while deleting last line of text [PR #9](https://github.com/shardulm94/vscode-trailingspaces/pull/9)
+- [@yustnip](https://github.com/yustnip): Added options to change background and border colors of highlighting [PR #17](https://github.com/shardulm94/vscode-trailingspaces/pull/17)
+- [@ameily](https://github.com/ameily): Properly trim spaces using the new TextEditor.edit() callback [PR #26](https://github.com/shardulm94/vscode-trailingspaces/pull/26)
