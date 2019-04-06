@@ -14,7 +14,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ### Changed
 - Only attach VSCode event listeners if current settings require them.
 - Major refactor to simplify the core extension logic.
-- Ingore `output` scheme by default
+- Ignore `output` scheme by default
 
 ### Fixed
 - Fix "Trim on Save" requiring file to be saved twice.
