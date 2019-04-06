@@ -5,6 +5,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [0.3.0] - 2019-04-06
 ### Added
 - Allow specific schemes to be ignored.
 - Add options to change background and border colors of highlighting.
@@ -13,6 +14,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ### Changed
 - Only attach VSCode event listeners if current settings require them.
 - Major refactor to simplify the core extension logic.
+- Ingore `output` scheme by default
 
 ### Fixed
 - Fix "Trim on Save" requiring file to be saved twice.
