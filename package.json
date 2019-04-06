@@ -61,7 +61,7 @@
         },
         "trailing-spaces.schemeIgnore": {
           "type": "array",
-          "default": [],
+          "default": ["output"],
           "description": "With this option you can ignore specific schemes. An item has to match the case-sensitive string of the scheme of the document."
         },
         "trailing-spaces.trimOnSave": {

@@ -193,7 +193,7 @@ For the most recent list of langauges, please use the [known language identifier
 
 ### Ignore Scheme
 
-*Default: []*
+*Default: ["output"]*
 
 With this option you can ignore documents with a specific scheme. An item has to match the case-sensitive string of the scheme of the document. For instance, if you want to ignore VSCode output windows:
 
