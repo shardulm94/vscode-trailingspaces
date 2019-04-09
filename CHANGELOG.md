@@ -1,9 +1,10 @@
 # Change Log
-All notable changes to the "vscode-trailingspaces" extension will be documented in this file.
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
-## [Unreleased]
+## [0.3.1] - 2019-04-08
+### Changed
+- Trigger `trimOnSave` on auto-saves along with manual saves to maintain backward compatibility
+
 
 ## [0.3.0] - 2019-04-06
 ### Added
