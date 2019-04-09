@@ -84,14 +84,12 @@ export default class TrailingSpacesLoader {
         if (this.settings.trimOnSave) {
             disposables.push(
                 vscode.workspace.onWillSaveTextDocument((event: vscode.TextDocumentWillSaveEvent) => {
-                    if (event.reason == vscode.TextDocumentSaveReason.Manual) {
-                        this.logger.log(`onWillSaveTextDocument event called - ${event.document.fileName}`);
-                        vscode.window.visibleTextEditors.forEach((editor: vscode.TextEditor) => {
-                            if (event.document.uri === editor.document.uri) {
-                                event.waitUntil(Promise.resolve(this.trailingSpaces.getEditsForDeletingTralingSpaces(editor.document)));
-                            }
-                        });
-                    }
+                    this.logger.log(`onWillSaveTextDocument event called - ${event.document.fileName}`);
+                    vscode.window.visibleTextEditors.forEach((editor: vscode.TextEditor) => {
+                        if (event.document.uri === editor.document.uri) {
+                            event.waitUntil(Promise.resolve(this.trailingSpaces.getEditsForDeletingTralingSpaces(editor.document)));
+                        }
+                    });
                 })
             );
         }
