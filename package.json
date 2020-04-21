@@ -66,11 +66,11 @@
           ],
           "description": "With this option you can ignore specific schemes. An item has to match the case-sensitive string of the scheme of the document."
         },
-				"trailing-spaces.pathToIgnore": {
-					"type": "string",
-					"default": "",
-					"description": "With this option you can ignore files whose paths match the regular expression (fully)."
-				},
+        "trailing-spaces.pathToIgnore": {
+          "type": "string",
+          "default": "",
+          "description": "With this option you can ignore files whose paths match the regular expression (fully)."
+        },
         "trailing-spaces.trimOnSave": {
           "type": "boolean",
           "default": false,
