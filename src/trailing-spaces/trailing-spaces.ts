@@ -147,7 +147,7 @@ export class TrailingSpaces {
      * @returns {vscode.Range[]} An array of ranges containing the trailing spaces
      */
     private findTrailingSpaces(document: vscode.TextDocument): vscode.Range[] {
-        if (this.ignoreDocument(document.languageId, document.uri.scheme)) {
+        if (this.ignoreDocument(document.languageId, document.uri)) {
             this.logger.info(`File with langauge '${document.languageId}' and scheme '${document.uri.scheme}' ignored - ${document.fileName}`);
             return [];
         } else {
@@ -180,8 +180,9 @@ export class TrailingSpaces {
      * @param {string} scheme The scheme of the document to be checked
      * @returns {boolean} A boolean indicating if the document needs to be ignored
      */
-    private ignoreDocument(language: string, scheme: string): boolean {
+    private ignoreDocument(language: string, uri: Uri): boolean {
         return (!isNullOrUndefined(language) && this.settings.languagesToIgnore[language]
-            || !isNullOrUndefined(scheme) && this.settings.schemesToIgnore[scheme]);
+            || !isNullOrUndefined(uri.scheme) && this.settings.schemesToIgnore[uri.scheme]
+            || !isNullOrUndefined(uri.path) && RegExp(this.settings.pathToIgnore, 'g').test(uri.path));
     }
 }
