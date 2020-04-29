@@ -69,7 +69,7 @@
         "trailing-spaces.pathToIgnore": {
           "type": "string",
           "default": "",
-          "description": "With this option you can ignore files whose paths match the regular expression (fully)."
+          "description": "With this option you can ignore files whose paths contain a match for the regular expression (case insensitive)."
         },
         "trailing-spaces.trimOnSave": {
           "type": "boolean",

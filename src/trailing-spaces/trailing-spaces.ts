@@ -180,9 +180,9 @@ export class TrailingSpaces {
      * @param {string} scheme The scheme of the document to be checked
      * @returns {boolean} A boolean indicating if the document needs to be ignored
      */
-    private ignoreDocument(language: string, uri: Uri): boolean {
+    private ignoreDocument(language: string, uri: vscode.Uri): boolean {
         return (!isNullOrUndefined(language) && this.settings.languagesToIgnore[language]
             || !isNullOrUndefined(uri.scheme) && this.settings.schemesToIgnore[uri.scheme]
-            || !isNullOrUndefined(uri.path) && RegExp(this.settings.pathToIgnore, 'g').test(uri.path));
+            || !isNullOrUndefined(uri.path) && RegExp(this.settings.pathToIgnore, 'i').test(uri.path));
     }
 }
