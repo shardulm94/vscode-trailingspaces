@@ -58,7 +58,7 @@ export class Settings implements TrailingSpacesSettings {
         this.deleteModifiedLinesOnly = config.get<boolean>('deleteModifiedLinesOnly');
         this.languagesToIgnore = this.getMapFromStringArray(config.get<string[]>('syntaxIgnore'));
         this.schemesToIgnore = this.getMapFromStringArray(config.get<string[]>('schemeIgnore'));
-        this.pathToIgnore = config.get<string[]>('pathToIgnore');
+        this.pathToIgnore = config.get<string>('pathToIgnore');
         this.trimOnSave = config.get<boolean>('trimOnSave');
         this.showStatusBarMessage = config.get<boolean>('showStatusBarMessage');
         this.textEditorDecorationType = this.getTextEditorDecorationType(config.get<string>('backgroundColor'), config.get<string>('borderColor'));

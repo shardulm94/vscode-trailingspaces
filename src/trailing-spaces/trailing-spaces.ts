@@ -181,8 +181,18 @@ export class TrailingSpaces {
      * @returns {boolean} A boolean indicating if the document needs to be ignored
      */
     private ignoreDocument(language: string, uri: vscode.Uri): boolean {
-        return (!isNullOrUndefined(language) && this.settings.languagesToIgnore[language]
-            || !isNullOrUndefined(uri.scheme) && this.settings.schemesToIgnore[uri.scheme]
-            || !isNullOrUndefined(uri.path) && RegExp(this.settings.pathToIgnore, 'i').test(uri.path));
+        if (!isNullOrUndefined(language) && this.settings.languagesToIgnore[language])
+            return true;
+
+        if (!isNullOrUndefined(uri.scheme) && this.settings.schemesToIgnore[uri.scheme])
+            return true;
+
+        if (!isNullOrUndefined(uri.path)
+            && !isNullOrUndefined(this.settings.pathToIgnore)
+            && this.settings.pathToIgnore !== ''
+            && RegExp(this.settings.pathToIgnore, 'i').test(uri.path))
+            return true;
+        
+        return false;
     }
 }
