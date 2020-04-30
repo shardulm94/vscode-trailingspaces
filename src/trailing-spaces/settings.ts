@@ -12,6 +12,7 @@ export interface TrailingSpacesSettings {
     deleteModifiedLinesOnly: boolean,
     languagesToIgnore: { [id: string]: boolean; },
     schemesToIgnore: { [id: string]: boolean; },
+    pathToIgnore: string,
     trimOnSave: boolean,
     showStatusBarMessage: boolean,
     textEditorDecorationType: vscode.TextEditorDecorationType
@@ -30,6 +31,7 @@ export class Settings implements TrailingSpacesSettings {
     deleteModifiedLinesOnly!: boolean;
     languagesToIgnore!: { [id: string]: boolean; };
     schemesToIgnore!: { [id: string]: boolean; };
+    pathToIgnore!: string;
     trimOnSave!: boolean;
     showStatusBarMessage!: boolean;
     textEditorDecorationType!: vscode.TextEditorDecorationType;
@@ -56,6 +58,7 @@ export class Settings implements TrailingSpacesSettings {
         this.deleteModifiedLinesOnly = config.get<boolean>('deleteModifiedLinesOnly');
         this.languagesToIgnore = this.getMapFromStringArray(config.get<string[]>('syntaxIgnore'));
         this.schemesToIgnore = this.getMapFromStringArray(config.get<string[]>('schemeIgnore'));
+        this.pathToIgnore = config.get<string>('pathToIgnore');
         this.trimOnSave = config.get<boolean>('trimOnSave');
         this.showStatusBarMessage = config.get<boolean>('showStatusBarMessage');
         this.textEditorDecorationType = this.getTextEditorDecorationType(config.get<string>('backgroundColor'), config.get<string>('borderColor'));
@@ -74,6 +77,7 @@ export class Settings implements TrailingSpacesSettings {
         config.update('deleteModifiedLinesOnly', undefined, true);
         config.update('syntaxIgnore', undefined, true);
         config.update('schemeIgnore', undefined, true);
+        config.update('pathToIgnore', undefined, true);
         config.update('trimOnSave', undefined, true);
         config.update('showStatusBarMessage', undefined, true);
         config.update('backgroundColor', undefined, true);
