@@ -97,6 +97,34 @@ describe("Extension Tests", () => {
                 });
             });
         });
+
+        it("should delete trailing spaces in all consecutive modified lines only", (done: MochaDone) => {
+            loadTestFileIntoEditor('./files/delete_trailing_spaces_in_consecutive_modified_lines_sample.js', done)
+            .then((testEditor: vscode.TextEditor) => {
+                settings.deleteModifiedLinesOnly = true;
+                testEditor.edit((editBuilder: vscode.TextEditorEdit) => {
+                    editBuilder.insert(new vscode.Position(11, 2), "test");
+                    editBuilder.insert(new vscode.Position(12, 2), "test");
+                    editBuilder.delete(new vscode.Range(1, 0, 1, 3));
+                }).then((flag: boolean) => {
+                    assertDeleteTrailingSpaces(testEditor, './files/delete_trailing_spaces_in_consecutive_modified_lines_result.js', done);
+                });
+            });
+        });
+
+        it("should delete trailing spaces in newly inserted and modified lines only", (done: MochaDone) => {
+            loadTestFileIntoEditor('./files/delete_trailing_spaces_in_new_and_modified_lines_sample.js', done)
+            .then((testEditor: vscode.TextEditor) => {
+                settings.deleteModifiedLinesOnly = true;
+                testEditor.edit((editBuilder: vscode.TextEditorEdit) => {
+                    editBuilder.insert(new vscode.Position(11, 2), "test");
+                    editBuilder.insert(new vscode.Position(12, 2), "test   \n");
+                    editBuilder.delete(new vscode.Range(1, 0, 1, 3));
+                }).then((flag: boolean) => {
+                    assertDeleteTrailingSpaces(testEditor, './files/delete_trailing_spaces_in_new_and_modified_lines_result.js', done);
+                });
+            });
+        });
     });
 
     afterEach((done: MochaDone) => {
