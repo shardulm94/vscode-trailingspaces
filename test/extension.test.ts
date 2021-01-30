@@ -14,66 +14,87 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 describe("Extension Tests", () => {
-    let testFileUri: vscode.Uri = vscode.Uri.file(path.join(__dirname, "files/sample.js"));
-    let testDocument: vscode.TextDocument;
-    let testEditor: vscode.TextEditor;
     let settings: Settings = Settings.getInstance()
 
-    before((done: MochaDone) => {
-        vscode.workspace.openTextDocument(testFileUri).then((document: vscode.TextDocument) => {
-            testDocument = document;
-            vscode.window.showTextDocument(testDocument).then((editor: vscode.TextEditor) => {
-                testEditor = editor;
-                done();
-            })
-        });
-    });
+    async function loadTestFileIntoEditor(testFileName: string, done: MochaDone) { 
+      let testFileUri: vscode.Uri = vscode.Uri.file(path.join(__dirname, testFileName));
+
+      return vscode.workspace.openTextDocument(testFileUri)
+      .then(
+        (document: vscode.TextDocument) => vscode.window.showTextDocument(document),
+        (reason: any) => {done(reason); return vscode.window.activeTextEditor}  // need this return to make ts happy
+      )
+    }
 
     describe("testForDeleteTrailingSpaces", () => {
         it("should delete all trailing spaces", (done: MochaDone) => {
             vscode.workspace.getConfiguration
-            assertDeleteTrailingSpaces(testEditor, './files/delete_all_trailing_spaces.js', done);
+            loadTestFileIntoEditor('./files/delete_all_trailing_spaces_sample.js', done)
+            .then((testEditor: vscode.TextEditor) => {
+                assertDeleteTrailingSpaces(testEditor, './files/delete_all_trailing_spaces_result.js', done);
+            });
         });
 
         it("should not delete trailing spaces in empty lines", (done: MochaDone) => {
             settings.includeEmptyLines = false;
-            assertDeleteTrailingSpaces(testEditor, './files/delete_trailing_spaces_exclude_empty_line.js', done);
+            loadTestFileIntoEditor('./files/delete_trailing_spaces_exclude_empty_line_sample.js', done)
+            .then((testEditor: vscode.TextEditor) => {
+                assertDeleteTrailingSpaces(testEditor, './files/delete_trailing_spaces_exclude_empty_line_result.js', done);
+            });
         });
 
         it("should delete but not highlight trailing spaces in the current line", (done: MochaDone) => {
             settings.highlightCurrentLine = false;
-            testEditor.selections = [new vscode.Selection(new vscode.Position(1, 3), new vscode.Position(1, 3))];
-            assertDeleteTrailingSpaces(testEditor, './files/delete_trailing_spaces_exclude_current_line_highlight.js', done);
+            loadTestFileIntoEditor('./files/delete_trailing_spaces_exclude_current_line_highlight_sample.js', done)
+            .then((testEditor: vscode.TextEditor) => {
+                testEditor.selections = [new vscode.Selection(new vscode.Position(1, 3), new vscode.Position(1, 3))];
+                assertDeleteTrailingSpaces(testEditor, './files/delete_trailing_spaces_exclude_current_line_highlight_result.js', done);
+            });
         });
 
         it("should not delete trailing spaces in the current line if line is empty", (done: MochaDone) => {
             settings.includeEmptyLines = false;
-            testEditor.selections = [new vscode.Selection(new vscode.Position(11, 3), new vscode.Position(11, 3))];
-            assertDeleteTrailingSpaces(testEditor, './files/delete_trailing_spaces_exclude_empty_line_when_exclude_current_line_highlight.js', done);
+            loadTestFileIntoEditor('./files/delete_trailing_spaces_exclude_empty_line_when_exclude_current_line_highlight_sample.js', done)
+            .then((testEditor: vscode.TextEditor) => {
+                testEditor.selections = [new vscode.Selection(new vscode.Position(11, 3), new vscode.Position(11, 3))];
+                assertDeleteTrailingSpaces(testEditor, './files/delete_trailing_spaces_exclude_empty_line_when_exclude_current_line_highlight_result.js', done);
+            });
         });
 
         it("should not delete trailing spaces when language is set in syntaxIgnore", (done: MochaDone) => {
-            settings.languagesToIgnore[testEditor.document.languageId] = true;
-            assertDeleteTrailingSpaces(testEditor, './files/should_not_delete_spaces.js', done);
+            loadTestFileIntoEditor('./files/should_not_delete_spaces_sample.js', done)
+            .then((testEditor: vscode.TextEditor) => {
+                settings.languagesToIgnore[testEditor.document.languageId] = true;
+                assertDeleteTrailingSpaces(testEditor, './files/should_not_delete_spaces_result.js', done);
+            });
         });
 
         it("should not delete trailing spaces when file scheme is set in schemeIgnore", (done: MochaDone) => {
-            settings.schemesToIgnore[testEditor.document.uri.scheme] = true;
-            assertDeleteTrailingSpaces(testEditor, './files/should_not_delete_spaces.js', done);
+            loadTestFileIntoEditor('./files/should_not_delete_spaces_sample.js', done)
+            .then((testEditor: vscode.TextEditor) => {
+                settings.schemesToIgnore[testEditor.document.uri.scheme] = true;
+                assertDeleteTrailingSpaces(testEditor, './files/should_not_delete_spaces_result.js', done);
+            });
         });
 
         it("should delete all trailing spaces including blank lines when regex is [\\s]+", (done: MochaDone) => {
-            settings.regexp = "[\\s]+";
-            assertDeleteTrailingSpaces(testEditor, './files/delete_all_trailing_spaces_including_blank_lines.js', done);
+            loadTestFileIntoEditor('./files/delete_all_trailing_spaces_including_blank_lines_sample.js', done)
+            .then((testEditor: vscode.TextEditor) => {
+                settings.regexp = "[\\s]+";
+                assertDeleteTrailingSpaces(testEditor, './files/delete_all_trailing_spaces_including_blank_lines_result.js', done);
+            });
         });
 
         it("should only delete trailing spaces in modified lines only", (done: MochaDone) => {
-            settings.deleteModifiedLinesOnly = true;
-            testEditor.edit((editBuilder: vscode.TextEditorEdit) => {
-                editBuilder.insert(new vscode.Position(11, 2), "test");
-                editBuilder.delete(new vscode.Range(1, 0, 1, 3));
-            }).then((flag: boolean) => {
-                assertDeleteTrailingSpaces(testEditor, './files/delete_trailing_spaces_in_modified_lines.js', done);
+            loadTestFileIntoEditor('./files/delete_trailing_spaces_in_modified_lines_sample.js', done)
+            .then((testEditor: vscode.TextEditor) => {
+                settings.deleteModifiedLinesOnly = true;
+                testEditor.edit((editBuilder: vscode.TextEditorEdit) => {
+                    editBuilder.insert(new vscode.Position(11, 2), "test");
+                    editBuilder.delete(new vscode.Range(1, 0, 1, 3));
+                }).then((flag: boolean) => {
+                    assertDeleteTrailingSpaces(testEditor, './files/delete_trailing_spaces_in_modified_lines_result.js', done);
+                });
             });
         });
     });
@@ -81,7 +102,7 @@ describe("Extension Tests", () => {
     afterEach((done: MochaDone) => {
         console.log("Reverting changes");
         settings.resetToDefaults()
-        vscode.commands.executeCommand("workbench.action.files.revert").then(() => done());
+        vscode.commands.executeCommand("workbench.action.closeActiveEditor").then(() => done());
     });
 
 });
