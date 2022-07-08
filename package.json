@@ -9,7 +9,6 @@
         "vscode": "^1.68.0"
     },
     "extensionKind": [
-        "ui",
         "workspace"
     ],
     "categories": [
@@ -114,7 +113,7 @@
         "onCommand:trailing-spaces.deleteTrailingSpaces",
         "onCommand:trailing-spaces.deleteTrailingSpacesModifiedLinesOnly",
         "onCommand:trailing-spaces.highlightTrailingSpaces",
-        "*"
+        "onStartupFinished"
     ],
     "scripts": {
         "vscode:prepublish": "npm run compile",
