@@ -16,7 +16,13 @@ export function getModifiedLineNumbers(oldFile: string, newFile: string): Set<nu
     let editedLines: Set<number> = new Set();
     diffs.forEach(diff => {
         if (diff.added) {
-            editedLines.add(lineNumber);
+            if (diff.count) {
+                for (let i = 0; i < diff.count; i++) {
+                    editedLines.add(lineNumber + i);
+                }
+            } else {
+                editedLines.add(lineNumber);
+            }
         }
         if (!diff.removed && diff.count) {
             lineNumber += diff.count;
