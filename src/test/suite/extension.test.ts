@@ -132,7 +132,7 @@ describe("Extension Tests", () => {
         vscode.commands.executeCommand("workbench.action.closeActiveEditor").then(() => done());
     });
 
-});
+}).timeout(10000);
 
 let assertDeleteTrailingSpaces = (editor: vscode.TextEditor, expectedOutputFile: string, done: Done): void => {
     let outputFile: string = fs.readFileSync(path.join(__dirname, expectedOutputFile), "utf-8");
