@@ -48,17 +48,17 @@ export class Settings implements TrailingSpacesSettings {
 
     public refreshSettings(): void {
         let config: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration('trailing-spaces');
-        this.logLevel = LogLevel[config.get<keyof typeof LogLevel>('logLevel')];
-        this.includeEmptyLines = config.get<boolean>('includeEmptyLines');
-        this.highlightCurrentLine = config.get<boolean>('highlightCurrentLine');
-        this.regexp = config.get<string>('regexp');
-        this.liveMatching = config.get<boolean>('liveMatching');
-        this.deleteModifiedLinesOnly = config.get<boolean>('deleteModifiedLinesOnly');
-        this.languagesToIgnore = this.getMapFromStringArray(config.get<string[]>('syntaxIgnore'));
-        this.schemesToIgnore = this.getMapFromStringArray(config.get<string[]>('schemeIgnore'));
-        this.trimOnSave = config.get<boolean>('trimOnSave');
-        this.showStatusBarMessage = config.get<boolean>('showStatusBarMessage');
-        this.textEditorDecorationType = this.getTextEditorDecorationType(config.get<string>('backgroundColor'), config.get<string>('borderColor'));
+        this.logLevel = LogLevel[this.getOrError<keyof typeof LogLevel>(config, 'logLevel')];
+        this.includeEmptyLines = this.getOrError<boolean>(config, 'includeEmptyLines');
+        this.highlightCurrentLine = this.getOrError<boolean>(config, 'highlightCurrentLine');
+        this.regexp = this.getOrError<string>(config, 'regexp');
+        this.liveMatching = this.getOrError<boolean>(config, 'liveMatching');
+        this.deleteModifiedLinesOnly = this.getOrError<boolean>(config, 'deleteModifiedLinesOnly');
+        this.languagesToIgnore = this.getMapFromStringArray(this.getOrError<string[]>(config, 'syntaxIgnore'));
+        this.schemesToIgnore = this.getMapFromStringArray(this.getOrError<string[]>(config, 'schemeIgnore'));
+        this.trimOnSave = this.getOrError<boolean>(config, 'trimOnSave');
+        this.showStatusBarMessage = this.getOrError<boolean>(config, 'showStatusBarMessage');
+        this.textEditorDecorationType = this.getTextEditorDecorationType(this.getOrError<string>(config, 'backgroundColor'), this.getOrError<string>(config, 'borderColor'));
         this.logger.setLogLevel(this.logLevel);
         this.logger.setPrefix('Trailing Spaces');
         this.logger.log('Configuration loaded');
@@ -97,5 +97,14 @@ export class Settings implements TrailingSpacesSettings {
             backgroundColor: backgroundColor,
             borderColor: borderColor
         });
+    }
+
+    private getOrError<T>(config: vscode.WorkspaceConfiguration, key: string): T {
+        let value = config.get<T>(key);
+        if (value === undefined) {
+            throw new Error(`Did not expect undefined config: ${key}`);
+        } else {
+            return value;
+        }
     }
 }

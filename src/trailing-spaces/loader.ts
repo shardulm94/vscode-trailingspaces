@@ -28,14 +28,14 @@ export default class TrailingSpacesLoader {
         vscode.workspace.onDidChangeConfiguration(this.reinitialize, this, subscriptions);
         this.registerCommands(subscriptions);
         this.registerEventListeners();
-        this.highlightActiveEditors()
+        this.highlightActiveEditors();
     }
 
     private reinitialize(): void {
         this.dispose();
         this.settings.refreshSettings();
         this.registerEventListeners();
-        this.highlightActiveEditors()
+        this.highlightActiveEditors();
     }
 
     private registerCommands(subscriptions: vscode.Disposable[]): void {
@@ -43,11 +43,11 @@ export default class TrailingSpacesLoader {
             vscode.commands.registerTextEditorCommand('trailing-spaces.deleteTrailingSpaces', this.trailingSpaces.delete, this.trailingSpaces),
             vscode.commands.registerTextEditorCommand('trailing-spaces.deleteTrailingSpacesModifiedLinesOnly', this.trailingSpaces.deleteModifiedLinesOnly, this.trailingSpaces),
             vscode.commands.registerTextEditorCommand('trailing-spaces.highlightTrailingSpaces', this.trailingSpaces.highlight, this.trailingSpaces)
-        )
+        );
     }
 
     private registerEventListeners(): void {
-        let disposables: vscode.Disposable[] = []
+        let disposables: vscode.Disposable[] = [];
         if (this.settings.liveMatching) {
             disposables.push(
                 vscode.window.onDidChangeActiveTextEditor((editor: vscode.TextEditor | undefined) => {
@@ -57,13 +57,13 @@ export default class TrailingSpacesLoader {
                     }
                 }),
                 vscode.workspace.onDidChangeTextDocument((event: vscode.TextDocumentChangeEvent) => {
-                    if (vscode.window.activeTextEditor !== undefined && vscode.window.activeTextEditor.document == event.document) {
+                    if (vscode.window.activeTextEditor !== undefined && vscode.window.activeTextEditor.document === event.document) {
                         this.logger.log(`onDidChangeTextDocument event called - ${event.document.fileName}`);
                         this.trailingSpaces.highlight(vscode.window.activeTextEditor);
                     }
                 }),
                 vscode.workspace.onDidOpenTextDocument((document: vscode.TextDocument) => {
-                    if (vscode.window.activeTextEditor !== undefined && vscode.window.activeTextEditor.document == document) {
+                    if (vscode.window.activeTextEditor !== undefined && vscode.window.activeTextEditor.document === document) {
                         this.logger.log(`onDidOpenTextDocument event called - ${document.fileName}`);
                         this.trailingSpaces.highlight(vscode.window.activeTextEditor);
                     }
@@ -109,7 +109,7 @@ export default class TrailingSpacesLoader {
         if (this.listenerDisposables !== undefined) {
             this.listenerDisposables.forEach(disposable => {
                 disposable.dispose();
-            })
+            });
         }
     }
 }

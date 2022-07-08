@@ -22,7 +22,7 @@ export class TrailingSpaces {
     }
 
     public delete(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit): void {
-        this.deleteTrailingSpaces(editor, editorEdit)
+        this.deleteTrailingSpaces(editor, editorEdit);
     }
 
     public deleteModifiedLinesOnly(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit): void {
@@ -52,7 +52,7 @@ export class TrailingSpaces {
         for (let i: number = ranges.length - 1; i >= 0; i--) {
             editBuilder.delete(ranges[i]);
         }
-        this.showStatusBarMessage(editor.document, ranges.length, true)
+        this.showStatusBarMessage(editor.document, ranges.length, true);
     }
 
     /**
@@ -106,11 +106,11 @@ export class TrailingSpaces {
         let ranges: vscode.Range[] = this.findTrailingSpaces(document);
 
         if (!this.settings.highlightCurrentLine) {
-            let currentPosition: vscode.Position = document.validatePosition(selection.end)
+            let currentPosition: vscode.Position = document.validatePosition(selection.end);
             let currentLine: vscode.TextLine = document.lineAt(currentPosition);
 
             ranges = ranges.filter(range => {
-                return range.intersection(currentLine.range) == undefined
+                return range.intersection(currentLine.range) === undefined;
             });
         }
 
@@ -130,7 +130,7 @@ export class TrailingSpaces {
 
         // If deleteModifiedLinesOnly is set, filter out the ranges contained in the non-modified lines
         if ((this.settings.deleteModifiedLinesOnly || deleteModifiedLinesOnlyOverride)
-            && !document.isUntitled && document.uri.scheme == "file") {
+            && !document.isUntitled && document.uri.scheme === "file") {
             let modifiedLines: Set<number> = utils.getModifiedLineNumbers(fs.readFileSync(document.uri.fsPath, "utf-8"), document.getText());
             ranges = ranges.filter((range: vscode.Range) => {
                 return (modifiedLines.has(range.start.line));
