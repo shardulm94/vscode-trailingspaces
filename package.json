@@ -120,7 +120,7 @@
         "vscode:prepublish": "npm run compile",
         "compile": "tsc -p ./",
         "watch": "tsc -watch -p ./",
-        "pretest": "npm run compile && npm run lint && mkdir -p out/test/suite/files && ncp src/test/suite/files out/test/suite/files ",
+        "pretest": "npm run compile && npm run lint && mkdirp out/test/suite/files && ncp src/test/suite/files out/test/suite/files ",
         "lint": "eslint src --ext ts",
         "test": "node ./out/test/runTest.js"
     },
@@ -135,6 +135,7 @@
         "eslint": "^8.18.0",
         "glob": "^8.0.3",
         "ncp": "^2.0.0",
+        "mkdirp": "^1.0.4",
         "mocha": "^10.0.0",
         "typescript": "^4.7.4",
         "@vscode/test-electron": "^2.1.5"
