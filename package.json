@@ -1,157 +1,163 @@
 {
-  "name": "trailing-spaces",
-  "displayName": "Trailing Spaces",
-  "description": "Highlight trailing spaces and delete them in a flash!",
-  "version": "0.3.1",
-  "publisher": "shardulm94",
-  "icon": "icon.png",
-  "engines": {
-    "vscode": "^1.6.0"
-  },
-  "extensionKind": [
-    "ui",
-    "workspace"
-  ],
-  "categories": [
-    "Other"
-  ],
-  "main": "./out/src/extension",
-  "contributes": {
-    "configuration": {
-      "type": "object",
-      "title": "Trailing Spaces Configuration",
-      "properties": {
-        "trailing-spaces.logLevel": {
-          "type": "string",
-          "enum": [
-            "none",
-            "log",
-            "info",
-            "warn",
-            "error"
-          ],
-          "default": "warn",
-          "description": "Controls the verbosity of logging. Logs can be seen in the console by opening the dev tools. `log` is the most verbose and `error` will only show critical errors."
-        },
-        "trailing-spaces.includeEmptyLines": {
-          "type": "boolean",
-          "default": true,
-          "description": "By default, empty lines are cleared as well when calling the deletion command. Set to false to ignore empty lines upon deletion."
-        },
-        "trailing-spaces.highlightCurrentLine": {
-          "type": "boolean",
-          "default": true,
-          "description": "By default, the line being currently edited will have its trailing spaces highlighted. Set to false to ignore trailing spaces on the edited line."
-        },
-        "trailing-spaces.regexp": {
-          "type": "string",
-          "default": "[ \t]+",
-          "description": "By default, only simple spaces and tabs are matched as \"trailing spaces\"."
-        },
-        "trailing-spaces.liveMatching": {
-          "type": "boolean",
-          "default": true,
-          "description": "By default, Trailing Spaces is \"live\". It means the trailing spaces regions will be matched in the background, and highlighted if a color scope is defined, when the document is opened and edited. Set to false to disable live matching and highlighting (the deletion command remains available, so-called \"lazy matching\")."
-        },
-        "trailing-spaces.deleteModifiedLinesOnly": {
-          "type": "boolean",
-          "default": false,
-          "description": "By default, trailing spaces are deleted within the whole document. Set to true to affect only the lines you edited since last save. Trailing spaces will still be searched for and highlighted in the whole document."
-        },
-        "trailing-spaces.syntaxIgnore": {
-          "type": "array",
-          "default": [],
-          "description": "With this option you can ignore specific files based on the syntax used. An item has to match the case-sensitive string of the language used in the file."
-        },
-        "trailing-spaces.schemeIgnore": {
-          "type": "array",
-          "default": [
-            "output"
-          ],
-          "description": "With this option you can ignore specific schemes. An item has to match the case-sensitive string of the scheme of the document."
-        },
-        "trailing-spaces.trimOnSave": {
-          "type": "boolean",
-          "default": false,
-          "description": "Controls whether trailing spaces are trimmed automatically when saving a file."
-        },
-        "trailing-spaces.showStatusBarMessage": {
-          "type": "boolean",
-          "default": true,
-          "description": "By default, trailing space deletions will be communicated through a status bar message. Set to false to disable these messages."
-        },
-        "trailing-spaces.backgroundColor": {
-          "type": "string",
-          "default": "rgba(255,0,0,0.3)",
-          "description": "Controls the background color of the trailing space decoration."
-        },
-        "trailing-spaces.borderColor": {
-          "type": "string",
-          "default": "rgba(255,100,100,0.15)",
-          "description": "Controls the color of the border around the trailing space decoration."
-        }
-      }
+    "name": "trailing-spaces",
+    "displayName": "Trailing Spaces",
+    "description": "Highlight trailing spaces and delete them in a flash!",
+    "version": "0.4.0",
+    "publisher": "shardulm94",
+    "icon": "icon.png",
+    "engines": {
+        "vscode": "^1.68.0"
     },
-    "commands": [
-      {
-        "command": "trailing-spaces.deleteTrailingSpaces",
-        "title": "Delete",
-        "category": "Trailing Spaces"
-      },
-      {
-        "command": "trailing-spaces.deleteTrailingSpacesModifiedLinesOnly",
-        "title": "Delete - Modified Lines Only",
-        "category": "Trailing Spaces"
-      },
-      {
-        "command": "trailing-spaces.highlightTrailingSpaces",
-        "title": "Highlight",
-        "category": "Trailing Spaces"
-      }
-    ]
-  },
-  "activationEvents": [
-    "onCommand:trailing-spaces.deleteTrailingSpaces",
-    "onCommand:trailing-spaces.deleteTrailingSpacesModifiedLinesOnly",
-    "onCommand:trailing-spaces.highlightTrailingSpaces",
-    "*"
-  ],
-  "scripts": {
-    "vscode:prepublish": "tsc -p ./",
-    "compile": "tsc -watch -p ./",
-    "postinstall": "node ./node_modules/vscode/bin/install",
-    "pretest": "ncp test/files out/test/files",
-    "test": "node ./node_modules/vscode/bin/test"
-  },
-  "devDependencies": {
-    "typescript": "^3.3.0",
-    "vscode": "^1.1.37",
-    "mocha": "^5.0.0",
-    "@types/node": "^6.0.40",
-    "@types/mocha": "^5.0.0",
-    "ncp": "^2.0.0",
-    "@types/diff": "^4.0.0"
-  },
-  "directories": {
-    "test": "test"
-  },
-  "dependencies": {
-    "diff": "^4.0.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/shardulm94/vscode-trailingspaces.git"
-  },
-  "keywords": [
-    "trailing",
-    "spaces",
-    "delete",
-    "highlight"
-  ],
-  "author": "Shardul Mahadik",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/shardulm94/vscode-trailingspaces/issues"
-  },
-  "homepage": "https://github.com/shardulm94/vscode-trailingspaces#readme"
+    "extensionKind": [
+        "ui",
+        "workspace"
+    ],
+    "categories": [
+        "Other"
+    ],
+    "main": "./out/extension.js",
+    "contributes": {
+        "configuration": {
+            "type": "object",
+            "title": "Trailing Spaces Configuration",
+            "properties": {
+                "trailing-spaces.logLevel": {
+                    "type": "string",
+                    "enum": [
+                        "none",
+                        "log",
+                        "info",
+                        "warn",
+                        "error"
+                    ],
+                    "default": "warn",
+                    "description": "Controls the verbosity of logging. Logs can be seen in the console by opening the dev tools. `log` is the most verbose and `error` will only show critical errors."
+                },
+                "trailing-spaces.includeEmptyLines": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "By default, empty lines are cleared as well when calling the deletion command. Set to false to ignore empty lines upon deletion."
+                },
+                "trailing-spaces.highlightCurrentLine": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "By default, the line being currently edited will have its trailing spaces highlighted. Set to false to ignore trailing spaces on the edited line."
+                },
+                "trailing-spaces.regexp": {
+                    "type": "string",
+                    "default": "[ \t]+",
+                    "description": "By default, only simple spaces and tabs are matched as \"trailing spaces\"."
+                },
+                "trailing-spaces.liveMatching": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "By default, Trailing Spaces is \"live\". It means the trailing spaces regions will be matched in the background, and highlighted if a color scope is defined, when the document is opened and edited. Set to false to disable live matching and highlighting (the deletion command remains available, so-called \"lazy matching\")."
+                },
+                "trailing-spaces.deleteModifiedLinesOnly": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "By default, trailing spaces are deleted within the whole document. Set to true to affect only the lines you edited since last save. Trailing spaces will still be searched for and highlighted in the whole document."
+                },
+                "trailing-spaces.syntaxIgnore": {
+                    "type": "array",
+                    "default": [],
+                    "description": "With this option you can ignore specific files based on the syntax used. An item has to match the case-sensitive string of the language used in the file."
+                },
+                "trailing-spaces.schemeIgnore": {
+                    "type": "array",
+                    "default": [
+                        "output"
+                    ],
+                    "description": "With this option you can ignore specific schemes. An item has to match the case-sensitive string of the scheme of the document."
+                },
+                "trailing-spaces.trimOnSave": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Controls whether trailing spaces are trimmed automatically when saving a file."
+                },
+                "trailing-spaces.showStatusBarMessage": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "By default, trailing space deletions will be communicated through a status bar message. Set to false to disable these messages."
+                },
+                "trailing-spaces.backgroundColor": {
+                    "type": "string",
+                    "default": "rgba(255,0,0,0.3)",
+                    "description": "Controls the background color of the trailing space decoration."
+                },
+                "trailing-spaces.borderColor": {
+                    "type": "string",
+                    "default": "rgba(255,100,100,0.15)",
+                    "description": "Controls the color of the border around the trailing space decoration."
+                }
+            }
+        },
+        "commands": [
+            {
+                "command": "trailing-spaces.deleteTrailingSpaces",
+                "title": "Delete",
+                "category": "Trailing Spaces"
+            },
+            {
+                "command": "trailing-spaces.deleteTrailingSpacesModifiedLinesOnly",
+                "title": "Delete - Modified Lines Only",
+                "category": "Trailing Spaces"
+            },
+            {
+                "command": "trailing-spaces.highlightTrailingSpaces",
+                "title": "Highlight",
+                "category": "Trailing Spaces"
+            }
+        ]
+    },
+    "activationEvents": [
+        "onCommand:trailing-spaces.deleteTrailingSpaces",
+        "onCommand:trailing-spaces.deleteTrailingSpacesModifiedLinesOnly",
+        "onCommand:trailing-spaces.highlightTrailingSpaces",
+        "*"
+    ],
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./",
+        "pretest": "npm run compile && npm run lint && mkdir -p out/test/suite/files && ncp src/test/suite/files out/test/suite/files ",
+        "lint": "eslint src --ext ts",
+        "test": "node ./out/test/runTest.js"
+    },
+    "devDependencies": {
+        "@types/vscode": "^1.68.0",
+        "@types/glob": "^7.2.0",
+        "@types/mocha": "^9.1.1",
+        "@types/node": "16.x",
+        "@typescript-eslint/eslint-plugin": "^5.30.0",
+        "@typescript-eslint/parser": "^5.30.0",
+        "eslint": "^8.18.0",
+        "glob": "^8.0.3",
+        "ncp": "^2.0.0",
+        "mocha": "^10.0.0",
+        "typescript": "^4.7.4",
+        "@vscode/test-electron": "^2.1.5"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/shardulm94/vscode-trailingspaces.git"
+    },
+    "keywords": [
+        "trailing",
+        "spaces",
+        "delete",
+        "highlight"
+    ],
+    "author": "Shardul Mahadik",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/shardulm94/vscode-trailingspaces/issues"
+    },
+    "homepage": "https://github.com/shardulm94/vscode-trailingspaces#readme",
+    "__metadata": {
+        "id": "6ad45f5a-09ec-44e5-b363-867ddc1ec674",
+        "publisherDisplayName": "Shardul Mahadik",
+        "publisherId": "cdbc316c-f1de-43c4-9a22-4e211e955680",
+        "isPreReleaseVersion": false
+    }
 }
