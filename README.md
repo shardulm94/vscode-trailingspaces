@@ -106,7 +106,7 @@ each time you are about to start a new word, the space you type is matched as a 
 { "trailing-spaces.highlightCurrentLine": false }
 ```
 
-Even though the trailing spaces are not highlighted on this line, they are still internally matched and will be deleted when firing the deletion command.
+Even though the trailing spaces are not highlighted on this line, they are still internally matched and will be deleted when firing the deletion command. If you are editing multiple lines (using multiple cursors), all such lines will be ignored.
 
 ### Include Empty Lines
 
