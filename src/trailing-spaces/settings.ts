@@ -32,6 +32,8 @@ export class Settings implements TrailingSpacesSettings {
     schemesToIgnore!: { [id: string]: boolean; };
     trimOnSave!: boolean;
     showStatusBarMessage!: boolean;
+    backgroundColor!: string;
+    borderColor!: string;
     textEditorDecorationType!: vscode.TextEditorDecorationType;
 
     constructor() {
@@ -58,7 +60,7 @@ export class Settings implements TrailingSpacesSettings {
         this.schemesToIgnore = this.getMapFromStringArray(this.getOrError<string[]>(config, 'schemeIgnore'));
         this.trimOnSave = this.getOrError<boolean>(config, 'trimOnSave');
         this.showStatusBarMessage = this.getOrError<boolean>(config, 'showStatusBarMessage');
-        this.textEditorDecorationType = this.getTextEditorDecorationType(this.getOrError<string>(config, 'backgroundColor'), this.getOrError<string>(config, 'borderColor'));
+        this.setTextEditorDecorationType(config);
         this.logger.setLogLevel(this.logLevel);
         this.logger.setPrefix('Trailing Spaces');
         this.logger.log('Configuration loaded');
@@ -89,14 +91,25 @@ export class Settings implements TrailingSpacesSettings {
         return map;
     }
 
-    private getTextEditorDecorationType(backgroundColor: string, borderColor: string): vscode.TextEditorDecorationType {
-        return vscode.window.createTextEditorDecorationType({
-            borderRadius: "3px",
-            borderWidth: "1px",
-            borderStyle: "solid",
-            backgroundColor: backgroundColor,
-            borderColor: borderColor
-        });
+    private setTextEditorDecorationType(config: vscode.WorkspaceConfiguration): void {
+        let newBackgroundColor = this.getOrError<string>(config, 'backgroundColor');
+        let newBorderColor = this.getOrError<string>(config, 'borderColor');
+
+        if (newBackgroundColor !== this.backgroundColor || newBorderColor !== this.borderColor) {
+            this.backgroundColor = newBackgroundColor;
+            this.borderColor = newBorderColor;
+            if (this.textEditorDecorationType) {
+                // if an old decoration already exists, dispose it prior to creating a new one
+                this.textEditorDecorationType.dispose();
+            }
+            this.textEditorDecorationType = vscode.window.createTextEditorDecorationType({
+                borderRadius: "3px",
+                borderWidth: "1px",
+                borderStyle: "solid",
+                backgroundColor: newBackgroundColor,
+                borderColor: newBorderColor
+            });
+        }
     }
 
     private getOrError<T>(config: vscode.WorkspaceConfiguration, key: string): T {
