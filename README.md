@@ -222,6 +222,8 @@ You can control the background color of the highlighting performed by Trailing S
 { "trailing-spaces.backgroundColor": "rgba(255,0,0,0.3)" }
 ```
 
+To make the highlighting invisible, set this and the border color properties to `transparent`.
+
 ### Border Color
 
 *Default: rgba(255,100,100,0.15)*
@@ -231,6 +233,8 @@ You can control the border color of the highlighting performed by Trailing Space
 ``` js
 { "trailing-spaces.borderColor": "rgba(255,100,100,0.15)" }
 ```
+
+To make the highlighting invisible, set this and the background color properties to `transparent`.
 
 
 ### For power-users only!
