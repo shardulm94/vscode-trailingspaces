@@ -40,7 +40,7 @@
                 "trailing-spaces.highlightCurrentLine": {
                     "type": "boolean",
                     "default": true,
-                    "description": "By default, the line being currently edited will have its trailing spaces highlighted. Set to false to ignore trailing spaces on the edited line."
+                    "description": "By default, the lines being currently edited (i.e. with active cursors) will have its trailing spaces highlighted. Set to false to ignore trailing spaces on the current lines."
                 },
                 "trailing-spaces.regexp": {
                     "type": "string",
