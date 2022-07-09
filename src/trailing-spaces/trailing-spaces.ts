@@ -36,7 +36,7 @@ export class TrailingSpaces {
      * @param {vscode.TextEditor} editor The editor in which the spaces have to be highlighted
      */
     private highlightTrailingSpaces(editor: vscode.TextEditor): void {
-        editor.setDecorations(this.settings.textEditorDecorationType, this.getRangesToHighlight(editor.document, editor.selection));
+        editor.setDecorations(this.settings.textEditorDecorationType, this.getRangesToHighlight(editor.document, editor.selections));
     }
 
     /**
@@ -99,18 +99,22 @@ export class TrailingSpaces {
      *
      * @private
      * @param {vscode.TextDocument} document The document in which the trailing spaces should be found
-     * @param {vscode.Selection} selection The current selection inside the editor
+     * @param {vscode.Selection[]} selections The current selections inside the editor
      * @returns {vscode.Range[]} An array of ranges containing the trailing spaces
      */
-    private getRangesToHighlight(document: vscode.TextDocument, selection: vscode.Selection): vscode.Range[] {
+    private getRangesToHighlight(document: vscode.TextDocument, selections: readonly vscode.Selection[]): vscode.Range[] {
         let ranges: vscode.Range[] = this.findTrailingSpaces(document);
 
         if (!this.settings.highlightCurrentLine) {
-            let currentPosition: vscode.Position = document.validatePosition(selection.end);
-            let currentLine: vscode.TextLine = document.lineAt(currentPosition);
+            let currentLines = selections.map((selection: vscode.Selection) => {
+                return document.lineAt(document.validatePosition(selection.active));
+            });
 
             ranges = ranges.filter(range => {
-                return range.intersection(currentLine.range) === undefined;
+                // range should not intersect with any of our "current" lines
+                return !currentLines.some((line: vscode.TextLine) => {
+                    return range.intersection(line.range) !== undefined;
+                });
             });
         }
 
