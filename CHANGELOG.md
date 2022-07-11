@@ -1,9 +1,16 @@
 # Change Log
 
 
+## [0.4.1] - 2022-07-10
+### Fixed
+- Fixed an issue where changing settings would result in previously highlighted regions being permanently highlighted
+### Changed
+- `highlightCurrentLine` now considers all active cursors as current lines
+
+
 ## [0.4.0] - 2022-07-08
 ### Fixed
-- Fix an issue where only the first line of each block of modified lines is trimmed when deleteModifiedLinesOnly is set
+- Fix an issue where only the first line of each block of modified lines is trimmed when `deleteModifiedLinesOnly` is set
 ### Changed
 - Extension will now activate only after VSCode startup has finished to avoid VSCode startup slowdown
 
