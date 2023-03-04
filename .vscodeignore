@@ -1,3 +1,4 @@
+.github/workflows/**
 .vscode/**
 .vscode-test/**
 src/**
