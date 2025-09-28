@@ -5,7 +5,6 @@ import { ILogger, Logger } from './logger';
 import { Settings, TrailingSpacesSettings } from './settings';
 import * as utils from './utils';
 import fs = require('fs');
-import { isNullOrUndefined } from 'util';
 
 
 export class TrailingSpaces {
@@ -185,7 +184,7 @@ export class TrailingSpaces {
      * @returns {boolean} A boolean indicating if the document needs to be ignored
      */
     private ignoreDocument(language: string, scheme: string): boolean {
-        return (!isNullOrUndefined(language) && this.settings.languagesToIgnore[language]
-            || !isNullOrUndefined(scheme) && this.settings.schemesToIgnore[scheme]);
+        return ((language !== null && language !== undefined && this.settings.languagesToIgnore[language])
+            || (scheme !== null && scheme !== undefined && this.settings.schemesToIgnore[scheme]));
     }
 }
