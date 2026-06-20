@@ -127,9 +127,11 @@ describe("Extension Tests", () => {
         });
     });
 
-    afterEach((done: Done) => {
-        settings.resetToDefaults();
-        vscode.commands.executeCommand("workbench.action.closeActiveEditor").then(() => done());
+    afterEach(async () => {
+        // Await the reset so its onDidChangeConfiguration events are flushed
+        // before the next test sets its own setting overrides.
+        await settings.resetToDefaults();
+        await vscode.commands.executeCommand("workbench.action.closeActiveEditor");
     });
 
 });

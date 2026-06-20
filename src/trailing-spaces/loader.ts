@@ -25,7 +25,14 @@ export default class TrailingSpacesLoader {
     }
 
     private initialize(subscriptions: vscode.Disposable[]): void {
-        vscode.workspace.onDidChangeConfiguration(this.reinitialize, this, subscriptions);
+        vscode.workspace.onDidChangeConfiguration((e: vscode.ConfigurationChangeEvent) => {
+            // Only reinitialize when our own configuration changes. Reacting to
+            // unrelated config events needlessly reloads settings (and, during
+            // tests, races with manually-set overrides).
+            if (e.affectsConfiguration('trailing-spaces')) {
+                this.reinitialize();
+            }
+        }, this, subscriptions);
         this.registerCommands(subscriptions);
         this.registerEventListeners();
         this.highlightActiveEditors();
