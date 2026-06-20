@@ -120,24 +120,22 @@
         "compile": "tsc -p ./",
         "watch": "tsc -watch -p ./",
         "pretest": "npm run compile && npm run lint && mkdirp out/test/suite/files && ncp src/test/suite/files out/test/suite/files ",
-        "lint": "eslint src --ext ts",
+        "lint": "eslint src",
         "test": "node ./out/test/runTest.js"
     },
     "devDependencies": {
-        "@types/diff": "^5.0.2",
-        "@types/glob": "^7.2.0",
-        "@types/mocha": "^9.1.1",
-        "@types/node": "16.x",
+        "@types/diff": "^5.2.3",
+        "@types/mocha": "^10.0.10",
+        "@types/node": "^20.19.43",
         "@types/vscode": "^1.68.0",
-        "@typescript-eslint/eslint-plugin": "^5.30.0",
-        "@typescript-eslint/parser": "^5.30.0",
         "@vscode/test-electron": "^2.5.2",
-        "eslint": "^8.18.0",
-        "glob": "^8.0.3",
-        "mkdirp": "^1.0.4",
+        "eslint": "^9.39.4",
+        "glob": "^11.1.0",
+        "mkdirp": "^3.0.1",
         "mocha": "^10.8.2",
         "ncp": "^2.0.0",
-        "typescript": "^4.7.4"
+        "typescript": "^5.9.3",
+        "typescript-eslint": "^8.61.1"
     },
     "dependencies": {
         "diff": "^5.0.2"
