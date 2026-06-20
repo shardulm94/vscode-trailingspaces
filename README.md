@@ -256,3 +256,5 @@ Contributions
 - [@yustnip](https://github.com/yustnip): Added options to change background and border colors of highlighting [PR #17](https://github.com/shardulm94/vscode-trailingspaces/pull/17)
 - [@ameily](https://github.com/ameily): Properly trim spaces using the new TextEditor.edit() callback [PR #26](https://github.com/shardulm94/vscode-trailingspaces/pull/26)
 - [@mplellison](https://github.com/mplellison): Restructure tests for maintainability and ensure consecutive modified lines are trimmed [PR #44](https://github.com/shardulm94/vscode-trailingspaces/pull/44)
+- [@leighmcculloch](https://github.com/leighmcculloch): Added support for the `ui` and `workspace` extension kinds [PR #50](https://github.com/shardulm94/vscode-trailingspaces/pull/50)
+- [@dnicolson](https://github.com/dnicolson): Fixed the `util.isNullOrUndefined` deprecation warning [PR #78](https://github.com/shardulm94/vscode-trailingspaces/pull/78)
