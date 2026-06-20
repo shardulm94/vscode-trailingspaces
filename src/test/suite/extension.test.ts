@@ -9,13 +9,22 @@ import * as assert from 'assert';
 // You can import and use all API from the 'vscode' module
 // as well as import your extension to test it
 import * as vscode from 'vscode';
-import { Settings } from '../../trailing-spaces/settings';
+import type { Settings } from '../../trailing-spaces/settings';
+import type { TrailingSpacesApi } from '../../extension';
 import * as path from 'path';
-import { Done, afterEach, describe, it } from 'mocha';
+import { Done, afterEach, before, describe, it } from 'mocha';
 import * as fs from 'fs';
 
 describe("Extension Tests", () => {
-    let settings: Settings = Settings.getInstance();
+    let settings: Settings;
+
+    before(async () => {
+        // Drive the same Settings singleton the (bundled) extension uses,
+        // rather than importing the module directly — see activate()'s return.
+        const ext = vscode.extensions.getExtension<TrailingSpacesApi>('shardulm94.trailing-spaces');
+        assert.ok(ext, "trailing-spaces extension not found in the test host");
+        settings = (await ext.activate()).settings;
+    });
 
     async function loadTestFileIntoEditor(testFileName: string, done: Done): Promise<vscode.TextEditor> {
         let testFileUri: vscode.Uri = vscode.Uri.file(path.join(__dirname, testFileName));
@@ -127,9 +136,11 @@ describe("Extension Tests", () => {
         });
     });
 
-    afterEach((done: Done) => {
-        settings.resetToDefaults();
-        vscode.commands.executeCommand("workbench.action.closeActiveEditor").then(() => done());
+    afterEach(async () => {
+        // Await the reset so its onDidChangeConfiguration events are flushed
+        // before the next test sets its own setting overrides.
+        await settings.resetToDefaults();
+        await vscode.commands.executeCommand("workbench.action.closeActiveEditor");
     });
 
 });

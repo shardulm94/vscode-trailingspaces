@@ -66,20 +66,25 @@ export class Settings implements TrailingSpacesSettings {
         this.logger.log('Configuration loaded');
     }
 
-    public resetToDefaults(): void {
+    public async resetToDefaults(): Promise<void> {
         let config: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration('trailing-spaces');
-        config.update('logLevel', undefined, true);
-        config.update('includeEmptyLines', undefined, true);
-        config.update('highlightCurrentLine', undefined, true);
-        config.update('regexp', undefined, true);
-        config.update('liveMatching', undefined, true);
-        config.update('deleteModifiedLinesOnly', undefined, true);
-        config.update('syntaxIgnore', undefined, true);
-        config.update('schemeIgnore', undefined, true);
-        config.update('trimOnSave', undefined, true);
-        config.update('showStatusBarMessage', undefined, true);
-        config.update('backgroundColor', undefined, true);
-        config.update('borderColor', undefined, true);
+        // Await all updates so the resulting onDidChangeConfiguration events are
+        // flushed before this resolves. Otherwise they fire asynchronously and
+        // can leak into the next test, resetting overrides mid-run.
+        await Promise.all([
+            config.update('logLevel', undefined, true),
+            config.update('includeEmptyLines', undefined, true),
+            config.update('highlightCurrentLine', undefined, true),
+            config.update('regexp', undefined, true),
+            config.update('liveMatching', undefined, true),
+            config.update('deleteModifiedLinesOnly', undefined, true),
+            config.update('syntaxIgnore', undefined, true),
+            config.update('schemeIgnore', undefined, true),
+            config.update('trimOnSave', undefined, true),
+            config.update('showStatusBarMessage', undefined, true),
+            config.update('backgroundColor', undefined, true),
+            config.update('borderColor', undefined, true)
+        ]);
         this.refreshSettings();
     }
 
