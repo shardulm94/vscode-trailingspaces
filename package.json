@@ -2,7 +2,7 @@
     "name": "trailing-spaces",
     "displayName": "Trailing Spaces",
     "description": "Highlight trailing spaces and delete them in a flash!",
-    "version": "0.4.1",
+    "version": "0.4.2",
     "publisher": "shardulm94",
     "icon": "icon.png",
     "engines": {
