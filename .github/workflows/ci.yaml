@@ -12,8 +12,17 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
-        node-version: [20.x, 22.x]
+        # The extension runs in VS Code's bundled Electron Node, not this host
+        # Node, so a single current version is enough to build/lint/bundle.
+        node-version: [24.x]
+        # `stable` and `insiders` both ship Node 24+ and guard the new-runtime
+        # end (issue #81's class). The `engines.vscode` floor (1.68) is enforced
+        # at build time instead, via an exact `@types/vscode` pin — the modern
+        # test harness can't launch inside a VS Code that old.
+        vscode-version: [stable, insiders]
     runs-on: ${{ matrix.os }}
+    env:
+      VSCODE_VERSION: ${{ matrix.vscode-version }}
     steps:
     - name: Checkout
       uses: actions/checkout@v4
