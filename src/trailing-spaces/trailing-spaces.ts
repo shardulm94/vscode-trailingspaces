@@ -57,10 +57,23 @@ export class TrailingSpaces {
     /**
      * Returns the edits required to delete the trailings spaces from a document
      *
+     * The returned edits are position ranges computed against the document as it
+     * is at call time. If the caller intends to apply them later (e.g. as a save
+     * participant via onWillSaveTextDocument), it must pass `expectedVersion` so
+     * we can detect a concurrent change. Applying stale ranges to a document that
+     * has moved on lands them on the wrong characters and corrupts content - see
+     * issue #80. When the document version no longer matches, no edits are
+     * returned and trimming is simply skipped for this pass.
+     *
      * @param {vscode.TextDocument} document The document in which the trailing spaces should be found
+     * @param {number} expectedVersion The document version the edits must apply against; if the live version differs, no edits are returned
      * @returns {vscode.TextEdit[]} An array of edits required to delete the trailings spaces from the document
      */
-    public getEditsForDeletingTralingSpaces(document: vscode.TextDocument): vscode.TextEdit[] {
+    public getEditsForDeletingTralingSpaces(document: vscode.TextDocument, expectedVersion?: number): vscode.TextEdit[] {
+        if (expectedVersion !== undefined && document.version !== expectedVersion) {
+            this.logger.warn(`Document changed during save; skipping trailing space deletion to avoid corrupting content - ${document.fileName}`);
+            return [];
+        }
         let ranges: vscode.Range[] = this.getRangesToDelete(document);
         let edits: vscode.TextEdit[] = new Array<vscode.TextEdit>(ranges.length);
         for (let i: number = ranges.length - 1; i >= 0; i--) {

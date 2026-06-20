@@ -94,7 +94,16 @@ export default class TrailingSpacesLoader {
                     this.logger.log(`onWillSaveTextDocument event called - ${event.document.fileName}`);
                     vscode.window.visibleTextEditors.forEach((editor: vscode.TextEditor) => {
                         if (event.document.uri === editor.document.uri) {
-                            event.waitUntil(Promise.resolve(this.trailingSpaces.getEditsForDeletingTralingSpaces(editor.document)));
+                            const document: vscode.TextDocument = editor.document;
+                            // Record the version we compute the edits against and
+                            // discard them if the document has moved on, so stale
+                            // ranges are never applied to shifted content (issue #80).
+                            // VSCode already ignores will-save edits on concurrent
+                            // modification; this is defense-in-depth on top of that.
+                            const versionAtSnapshot: number = document.version;
+                            event.waitUntil(Promise.resolve().then(() =>
+                                this.trailingSpaces.getEditsForDeletingTralingSpaces(document, versionAtSnapshot)
+                            ));
                         }
                     });
                 })
