@@ -23,7 +23,6 @@ This extension is a port of the popular [Sublime Text](https://www.sublimetext.c
 	- [Include Empty Lines](#include-empty-lines)
     - [Delete Modified Lines Only](#delete-modified-lines-only)
 	- [Trim On Save](#trim-on-save)
-	- [~~Save After Trim~~ *[REMOVED]*](#save-after-trim-removed)
 	- [Live Matching vs On-demand Matching](#live-matching-vs-on-demand-matching)
 	- [Ignore Syntax](#ignore-syntax)
 	- [Ignore Scheme](#ignore-scheme)
@@ -144,20 +143,6 @@ Setting this to `true` will ensure trailing spaces are deleted when you save you
 { "trailing-spaces.trimOnSave": true }
 ```
 
-### ~~Save After Trim~~ **[REMOVED]**
-
-*NOTE: The current VSCode lifecycle for text editor commands does not provide a clean way to implement this feature. Since I did not see a lot of folks using this option, it was better to remove it.*
-
-*Default: false*
-
-You may not want to always trim trailing spaces on save, but the other way around could prove useful. Setting this to `true` will automatically save your document after you fire the deletion command:
-
-``` js
-{ "trailing-spaces.saveAfterTrim": true }
-```
-
-It is obviously ignored if *Trim On Save* is on.
-
 ### Live Matching vs On-demand Matching
 
 *Default: true (reload VS Code Window to update)*
@@ -183,10 +168,10 @@ With this option you can ignore specific files based on the language used. An it
 { "trailing-spaces.syntaxIgnore": ["markdown"]}
 ```
 
-Here is a list of all languages that VS Code supports (as of 28 March 2019):
+Here is a list of all languages that VS Code supports (as of 19 June 2026):
 
 ```js
-bat, c, clojure, coffeescript, cpp, csharp, css, diff, dockerfile, fsharp, git-commit, git-rebase, go, groovy, handlebars, hexdump, hlsl, hocon, html, ignore, ini, jade, java, javascript, javascriptreact, jinja, json, jsonc, jsx-tags, jupyter, less, Log, log, lua, makefile, markdown, objective-c, objective-cpp, perl, perl6, php, pig, pip-requirements, plaintext, powershell, properties, python, r, razor, ruby, rust, scss, shaderlab, shellscript, sql, swift, toml, typescript, typescriptreact, vb, xml, xsl, yaml
+bat, bibtex, c, chatagent, clojure, code-text-binary, coffeescript, cpp, csharp, css, cuda-cpp, dart, diff, dockercompose, dockerfile, dotenv, fsharp, git-commit, git-rebase, go, groovy, handlebars, hlsl, html, ignore, ini, instructions, jade, java, javascript, javascriptreact, json, jsonc, jsonl, julia, juliamarkdown, latex, less, log, lua, makefile, markdown, objective-c, objective-cpp, perl, php, plaintext, powershell, prompt, properties, python, r, raku, razor, restructuredtext, ruby, rust, scss, search-result, shaderlab, shellscript, skill, snippets, sql, swift, tex, typescript, typescriptreact, vb, wat, xml, xsl, yaml
 ```
 
 For the most recent list of langauges, please use the [known language identifiers](https://code.visualstudio.com/docs/languages/identifiers#_known-language-identifiers) page or the `languages.getLanguages()` function (details [here](https://code.visualstudio.com/docs/extensionAPI/vscode-api#languages.getLanguages)).
