@@ -11,9 +11,26 @@ export class TrailingSpaces {
     private logger: ILogger;
     private settings: TrailingSpacesSettings;
 
+    /**
+     * The ranges most recently applied to each editor as decorations. Decorations
+     * are not readable back through the VSCode API, so we retain them to let tests
+     * assert what is highlighted (e.g. that split-view panes stay in sync). Keyed
+     * weakly so closed editors are collected.
+     */
+    private readonly highlightedRanges: WeakMap<vscode.TextEditor, readonly vscode.Range[]> = new WeakMap();
+
     constructor() {
         this.logger = Logger.getInstance();
         this.settings = Settings.getInstance();
+    }
+
+    /**
+     * Returns the ranges most recently highlighted in the given editor. Intended
+     * for test observation only, since decorations cannot be read back from the
+     * VSCode API.
+     */
+    public getHighlightedRanges(editor: vscode.TextEditor): readonly vscode.Range[] {
+        return this.highlightedRanges.get(editor) ?? [];
     }
 
     public highlight(editor: vscode.TextEditor, editorEdit: vscode.TextEditorEdit | undefined = undefined): void {
@@ -35,7 +52,9 @@ export class TrailingSpaces {
      * @param {vscode.TextEditor} editor The editor in which the spaces have to be highlighted
      */
     private highlightTrailingSpaces(editor: vscode.TextEditor): void {
-        editor.setDecorations(this.settings.textEditorDecorationType, this.getRangesToHighlight(editor.document, editor.selections));
+        let ranges: vscode.Range[] = this.getRangesToHighlight(editor.document, editor.selections);
+        editor.setDecorations(this.settings.textEditorDecorationType, ranges);
+        this.highlightedRanges.set(editor, ranges);
     }
 
     /**

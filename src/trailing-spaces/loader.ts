@@ -18,6 +18,10 @@ export default class TrailingSpacesLoader {
         this.trailingSpaces = new TrailingSpaces();
     }
 
+    public getHighlightedRanges(editor: vscode.TextEditor): readonly vscode.Range[] {
+        return this.trailingSpaces.getHighlightedRanges(editor);
+    }
+
     public activate(subscriptions: vscode.Disposable[]): void {
         subscriptions.push(this);
         this.initialize(subscriptions);
@@ -64,16 +68,16 @@ export default class TrailingSpacesLoader {
                     }
                 }),
                 vscode.workspace.onDidChangeTextDocument((event: vscode.TextDocumentChangeEvent) => {
-                    if (vscode.window.activeTextEditor !== undefined && vscode.window.activeTextEditor.document === event.document) {
-                        this.logger.log(`onDidChangeTextDocument event called - ${event.document.fileName}`);
-                        this.trailingSpaces.highlight(vscode.window.activeTextEditor);
-                    }
+                    this.logger.log(`onDidChangeTextDocument event called - ${event.document.fileName}`);
+                    // Re-highlight every visible editor showing this document, not
+                    // just the active one. When the same file is open in split view,
+                    // editing one pane must refresh the other pane's decorations too,
+                    // otherwise highlights desync between panes (issue #71).
+                    this.highlightEditorsForDocument(event.document);
                 }),
                 vscode.workspace.onDidOpenTextDocument((document: vscode.TextDocument) => {
-                    if (vscode.window.activeTextEditor !== undefined && vscode.window.activeTextEditor.document === document) {
-                        this.logger.log(`onDidOpenTextDocument event called - ${document.fileName}`);
-                        this.trailingSpaces.highlight(vscode.window.activeTextEditor);
-                    }
+                    this.logger.log(`onDidOpenTextDocument event called - ${document.fileName}`);
+                    this.highlightEditorsForDocument(document);
                 })
             );
 
@@ -106,6 +110,12 @@ export default class TrailingSpacesLoader {
             );
         }
         this.listenerDisposables = disposables;
+    }
+
+    private highlightEditorsForDocument(document: vscode.TextDocument): void {
+        vscode.window.visibleTextEditors
+            .filter((editor: vscode.TextEditor) => editor.document === document)
+            .forEach((editor: vscode.TextEditor) => this.trailingSpaces.highlight(editor));
     }
 
     private highlightActiveEditors(): void {

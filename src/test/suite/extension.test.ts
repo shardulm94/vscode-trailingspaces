@@ -10,7 +10,7 @@ import * as assert from 'assert';
 // as well as import your extension to test it
 import * as vscode from 'vscode';
 import type { Settings } from '../../trailing-spaces/settings';
-import type { TrailingSpacesApi } from '../../extension';
+import type { TrailingSpacesTestApi } from '../../extension';
 import * as path from 'path';
 import { Done, afterEach, before, describe, it } from 'mocha';
 import * as fs from 'fs';
@@ -21,9 +21,11 @@ describe("Extension Tests", () => {
     before(async () => {
         // Drive the same Settings singleton the (bundled) extension uses,
         // rather than importing the module directly — see activate()'s return.
-        const ext = vscode.extensions.getExtension<TrailingSpacesApi>('shardulm94.trailing-spaces');
+        const ext = vscode.extensions.getExtension<TrailingSpacesTestApi | undefined>('shardulm94.trailing-spaces');
         assert.ok(ext, "trailing-spaces extension not found in the test host");
-        settings = (await ext.activate()).settings;
+        const api = await ext.activate();
+        assert.ok(api, "test API should be available outside production");
+        settings = api.settings;
     });
 
     async function loadTestFileIntoEditor(testFileName: string, done: Done): Promise<vscode.TextEditor> {
