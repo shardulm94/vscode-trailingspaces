@@ -1,6 +1,14 @@
 # Change Log
 
 
+## [0.4.3] - 2026-06-19
+### Fixed
+- Fixed `trimOnSave` not trimming when the saved document's editor is hidden, e.g. with `files.autoSave: onFocusChange` (#76)
+- Guarded `trimOnSave` against stale edits so a concurrent edit or another save participant can no longer cause real content to be corrupted (#80)
+### Changed
+- Modernized the build: the extension is now bundled with esbuild, dependencies were refreshed, and the test suite and CI were updated
+
+
 ## [0.4.2] - 2026-06-19
 ### Fixed
 - Fixed a deprecation warning caused by the use of the deprecated `util.isNullOrUndefined` API
