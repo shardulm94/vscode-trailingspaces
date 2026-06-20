@@ -1,6 +1,11 @@
 # Change Log
 
 
+## [0.4.2] - 2026-06-19
+### Fixed
+- Fixed a deprecation warning caused by the use of the deprecated `util.isNullOrUndefined` API
+
+
 ## [0.4.1] - 2022-07-10
 ### Fixed
 - Fixed an issue where changing settings would result in previously highlighted regions being permanently highlighted
