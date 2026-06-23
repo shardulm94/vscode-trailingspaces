@@ -12,7 +12,7 @@ import * as os from 'os';
 import * as fs from 'fs';
 import { before, after, describe, it } from 'mocha';
 import type { Settings } from '../../trailing-spaces/settings';
-import type { TrailingSpacesApi } from '../../extension';
+import type { TrailingSpacesTestApi } from '../../extension';
 
 describe("Issue 76 - trimOnSave with hidden editor", () => {
     let settings: Settings;
@@ -20,9 +20,11 @@ describe("Issue 76 - trimOnSave with hidden editor", () => {
     let fileB: string;
 
     before(async () => {
-        const ext = vscode.extensions.getExtension<TrailingSpacesApi>('shardulm94.trailing-spaces');
+        const ext = vscode.extensions.getExtension<TrailingSpacesTestApi | undefined>('shardulm94.trailing-spaces');
         assert.ok(ext, "trailing-spaces extension not found in the test host");
-        settings = (await ext.activate()).settings;
+        const api = await ext.activate();
+        assert.ok(api, "test API should be available outside production");
+        settings = api.settings;
         // Enable trimOnSave; the config change reinitializes the listeners.
         await vscode.workspace.getConfiguration('trailing-spaces').update('trimOnSave', true, true);
 

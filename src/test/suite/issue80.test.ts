@@ -20,11 +20,11 @@ import * as assert from 'assert';
 import * as vscode from 'vscode';
 import { before, describe, it } from 'mocha';
 import { TrailingSpaces } from '../../trailing-spaces/trailing-spaces';
-import type { TrailingSpacesApi } from '../../extension';
+import type { TrailingSpacesTestApi } from '../../extension';
 
 describe("Issue #80 - trim-on-save race guard", () => {
     before(async () => {
-        const ext = vscode.extensions.getExtension<TrailingSpacesApi>('shardulm94.trailing-spaces');
+        const ext = vscode.extensions.getExtension<TrailingSpacesTestApi | undefined>('shardulm94.trailing-spaces');
         assert.ok(ext, "trailing-spaces extension not found in the test host");
         await ext.activate();
     });
