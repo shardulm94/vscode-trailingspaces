@@ -1,6 +1,11 @@
 # Change Log
 
 
+## [0.4.4] - 2026-06-22
+### Fixed
+- Fixed trailing-space highlights desyncing between split panes showing the same file: editing in one pane now refreshes the decorations in every visible pane, so highlights no longer go missing or leave a stale sliver behind (#71)
+
+
 ## [0.4.3] - 2026-06-19
 ### Fixed
 - Fixed `trimOnSave` not trimming when the saved document's editor is hidden, e.g. with `files.autoSave: onFocusChange` (#76)
